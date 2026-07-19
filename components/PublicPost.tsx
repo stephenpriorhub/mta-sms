@@ -46,8 +46,10 @@ export const CRITICAL_CSS = `
 .tl-logo-img{max-height:34px;width:auto}
 .tl-logo-text{color:var(--cream);font-weight:700;letter-spacing:.14em;font-size:13px;text-transform:uppercase}
 .tl-wrap{max-width:680px;margin:0 auto;padding:18px 16px 56px}
-.tl-topad{display:block;background:#f0f2f6;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:18px;color:var(--muted);font-size:13px;line-height:1.45;text-decoration:none}
-.tl-topad:hover{background:#e9edf3}
+.tl-topad{display:block;background:#f0f2f6;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:18px;font-size:13px;line-height:1.45;text-align:center}
+a.tl-topad{color:var(--accent);text-decoration:underline}
+a.tl-topad:hover{background:#e9edf3}
+div.tl-topad{color:var(--muted)}
 .tl-card{background:var(--card);border-radius:var(--radius);padding:24px 20px 8px}
 .tl-date{color:var(--muted);font-size:13px;margin:0 0 6px}
 .tl-title{color:var(--navy);font-size:24px;line-height:1.25;font-weight:700;margin:0 0 16px}
@@ -57,7 +59,7 @@ export const CRITICAL_CSS = `
 .tl-body img{border-radius:8px;margin:14px 0}
 .tl-body a{color:var(--accent)}
 .tl-action{background:var(--callout-bg);border-radius:8px;padding:20px;margin-top:24px}
-.tl-action-line{color:var(--article-ink);font-size:18.5px;line-height:1.5;margin:0}
+.tl-action-line{color:var(--article-ink);font-size:21.5px;line-height:1.45;margin:0}
 .tl-action-label{font-weight:700;color:var(--article-ink)}
 .tl-action-text{color:var(--action-green);font-weight:700}
 .tl-action-text p{display:inline;margin:0}
