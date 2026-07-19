@@ -36,9 +36,7 @@ export async function POST(req: NextRequest) {
       name: body.name,
       slug,
       logoUrl: body.logoUrl || null,
-      topAdEnabled: !!body.topAdEnabled,
-      topAdText: body.topAdText || null,
-      topAdLink: body.topAdLink || null,
+      category: body.category || null,
       archivesEnabled: !!body.archivesEnabled,
     },
   });

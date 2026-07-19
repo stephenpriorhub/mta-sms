@@ -38,10 +38,22 @@ export default async function ListPage({
   if (!latest) {
     return (
       <>
-        <header className="tl-header" style={{ background: "var(--navy)", padding: "14px 18px", textAlign: "center" }}>
-          <span style={{ color: "var(--cream)", fontWeight: 700, letterSpacing: ".14em", fontSize: 13, textTransform: "uppercase" }}>
-            {list.name}
-          </span>
+        <header
+          style={{
+            background: "var(--navy)",
+            padding: "14px 18px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          {/* Default header logo is ALWAYS the MTA cream image, never text. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={list.logoUrl || "/logo-cream.png"}
+            alt={list.name}
+            style={{ maxHeight: 34, width: "auto" }}
+          />
         </header>
         <main style={{ maxWidth: 680, margin: "0 auto", padding: "40px 16px", color: "var(--muted)" }}>
           No posts yet.

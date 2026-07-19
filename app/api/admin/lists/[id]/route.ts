@@ -48,9 +48,7 @@ export async function PUT(
     data.slug = slug;
   }
   if ("logoUrl" in body) data.logoUrl = body.logoUrl || null;
-  if ("topAdEnabled" in body) data.topAdEnabled = !!body.topAdEnabled;
-  if ("topAdText" in body) data.topAdText = body.topAdText || null;
-  if ("topAdLink" in body) data.topAdLink = body.topAdLink || null;
+  if ("category" in body) data.category = body.category || null;
   if ("archivesEnabled" in body) data.archivesEnabled = !!body.archivesEnabled;
 
   const list = await prisma.list.update({ where: { id }, data });

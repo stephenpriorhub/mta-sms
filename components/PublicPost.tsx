@@ -9,9 +9,6 @@ export interface PublicListData {
   name: string;
   slug: string;
   logoUrl: string | null;
-  topAdEnabled: boolean;
-  topAdText: string | null;
-  topAdLink: string | null;
   archivesEnabled: boolean;
 }
 
@@ -20,6 +17,10 @@ export interface PublicPostData {
   title: string | null;
   publishDate: Date;
   content: string;
+  // Post-level top text-ad box.
+  topAdEnabled: boolean;
+  topAdText: string | null;
+  topAdLink: string | null;
   actionToTake: string | null;
   actionSecondary: string | null;
   buttonText: string | null;
@@ -40,7 +41,7 @@ function fmtDate(d: Date): string {
   });
 }
 
-const CRITICAL_CSS = `
+export const CRITICAL_CSS = `
 .tl-header{background:var(--navy);padding:14px 18px;display:flex;justify-content:center;align-items:center}
 .tl-logo-img{max-height:34px;width:auto}
 .tl-logo-text{color:var(--cream);font-weight:700;letter-spacing:.14em;font-size:13px;text-transform:uppercase}
@@ -56,13 +57,13 @@ const CRITICAL_CSS = `
 .tl-body img{border-radius:8px;margin:14px 0}
 .tl-body a{color:var(--accent)}
 .tl-action{background:var(--callout-bg);border-radius:8px;padding:20px;margin-top:24px}
-.tl-action-line{color:var(--article-ink);font-size:15.5px;line-height:1.55;margin:0}
+.tl-action-line{color:var(--article-ink);font-size:18.5px;line-height:1.5;margin:0}
 .tl-action-label{font-weight:700;color:var(--article-ink)}
 .tl-action-text{color:var(--action-green);font-weight:700}
 .tl-action-text p{display:inline;margin:0}
 .tl-action-text a{color:var(--action-green)}
 .tl-action-secondary{color:var(--action-muted);font-size:12.5px;font-style:italic;line-height:1.5;margin:10px 0 0}
-.tl-btn{display:inline-block;background:var(--navy);color:#fff;text-decoration:none;font-weight:600;font-size:15px;padding:11px 22px;border-radius:8px;margin-top:14px}
+.tl-btn{display:block;width:fit-content;background:var(--navy);color:#fff;text-decoration:none;font-weight:600;font-size:15px;padding:11px 22px;border-radius:8px;margin:16px auto 0}
 .tl-btn:hover{background:var(--navy-soft)}
 .tl-archives{margin-top:26px;border-top:1px solid var(--line);padding-top:14px}
 .tl-archives summary{cursor:pointer;color:var(--muted);font-size:14px;font-weight:600;list-style:none}
@@ -86,8 +87,9 @@ export default function PublicPost({
   const bodyHtml = rewriteLinksForTracking(sanitizeHtml(post.content), post.id);
   const showAction = !!post.actionToTake && post.actionToTake.trim().length > 0;
   const showButton = !!post.buttonText?.trim() && !!post.buttonUrl?.trim();
-  const showTopAd =
-    list.topAdEnabled && !!list.topAdText?.trim() && !!list.topAdLink?.trim();
+  // Top ad now lives on the POST: show whenever enabled + text present (link optional).
+  const showTopAd = post.topAdEnabled && !!post.topAdText?.trim();
+  const topAdHasLink = !!post.topAdLink?.trim();
 
   return (
     <>
@@ -104,15 +106,18 @@ export default function PublicPost({
       </header>
 
       <main className="tl-wrap">
-        {showTopAd && (
-          <a
-            className="tl-topad"
-            href={trackedHref(post.id, list.topAdLink!, "top-ad")}
-            rel="nofollow"
-          >
-            {list.topAdText}
-          </a>
-        )}
+        {showTopAd &&
+          (topAdHasLink ? (
+            <a
+              className="tl-topad"
+              href={trackedHref(post.id, post.topAdLink!, "top-ad")}
+              rel="nofollow"
+            >
+              {post.topAdText}
+            </a>
+          ) : (
+            <div className="tl-topad">{post.topAdText}</div>
+          ))}
 
         <article className="tl-card">
           <p className="tl-date">{fmtDate(post.publishDate)}</p>

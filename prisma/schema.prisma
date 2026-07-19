@@ -15,10 +15,8 @@ model List {
   name            String
   slug            String   @unique
   logoUrl         String? // falls back to the MTA cream logo when null
-  // Top text-ad box (2-line light-grey link) rendered at the very top.
-  topAdEnabled    Boolean  @default(false)
-  topAdText       String?
-  topAdLink       String?
+  // Internal-only organizing category. NEVER rendered on any public page.
+  category        String?
   // "View Archives" accordion at the bottom of the public page.
   archivesEnabled Boolean  @default(false)
   createdAt       DateTime @default(now())
@@ -39,6 +37,10 @@ model Post {
   title           String?
   publishDate     DateTime @default(now())
   content         String   @db.Text // sanitized HTML (links + inline images)
+  // Top text-ad box (2-line light-grey link) rendered at the very top of THIS post.
+  topAdEnabled    Boolean  @default(false)
+  topAdText       String?
+  topAdLink       String?
   // Optional "ACTION TO TAKE" callout box. If actionToTake is empty the whole box hides.
   actionToTake    String?  @db.Text
   actionSecondary String? // optional secondary plain-text line inside the box

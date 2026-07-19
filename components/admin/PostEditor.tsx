@@ -3,11 +3,15 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import PostPreview from "@/components/admin/PostPreview";
 
 interface PostForm {
   title: string;
   publishDate: string; // datetime-local value
   content: string;
+  topAdEnabled: boolean;
+  topAdText: string;
+  topAdLink: string;
   actionToTake: string;
   actionSecondary: string;
   buttonText: string;
@@ -21,6 +25,9 @@ const empty = (): PostForm => {
     title: "",
     publishDate: now.toISOString().slice(0, 16),
     content: "",
+    topAdEnabled: false,
+    topAdText: "",
+    topAdLink: "",
     actionToTake: "",
     actionSecondary: "",
     buttonText: "",
@@ -47,6 +54,20 @@ export default function PostEditor({
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [err, setErr] = useState("");
+  const [listName, setListName] = useState("");
+  const [listLogo, setListLogo] = useState<string | null>(null);
+
+  // Load the list (for the preview header) — logo + name.
+  useEffect(() => {
+    (async () => {
+      const res = await fetch(`/api/admin/lists/${listId}`);
+      if (res.ok) {
+        const { list } = await res.json();
+        setListName(list.name);
+        setListLogo(list.logoUrl ?? null);
+      }
+    })();
+  }, [listId]);
 
   useEffect(() => {
     if (!postId) return;
@@ -58,6 +79,9 @@ export default function PostEditor({
           title: post.title ?? "",
           publishDate: toLocalInput(post.publishDate),
           content: post.content ?? "",
+          topAdEnabled: !!post.topAdEnabled,
+          topAdText: post.topAdText ?? "",
+          topAdLink: post.topAdLink ?? "",
           actionToTake: post.actionToTake ?? "",
           actionSecondary: post.actionSecondary ?? "",
           buttonText: post.buttonText ?? "",
@@ -95,6 +119,9 @@ export default function PostEditor({
       title: form.title,
       publishDate: new Date(form.publishDate).toISOString(),
       content: form.content,
+      topAdEnabled: form.topAdEnabled,
+      topAdText: form.topAdText,
+      topAdLink: form.topAdLink,
       actionToTake: form.actionToTake,
       actionSecondary: form.actionSecondary,
       buttonText: form.buttonText,
@@ -160,6 +187,41 @@ export default function PostEditor({
         </div>
       </div>
 
+      <h2>Top Text Ad (optional)</h2>
+      <div className="adm-card">
+        <div className="hint">
+          Renders as the 2-line light-grey box at the very top of this post’s public page.
+        </div>
+        <div className="checkline">
+          <input
+            type="checkbox"
+            id="topad"
+            checked={form.topAdEnabled}
+            onChange={(e) => set("topAdEnabled", e.target.checked)}
+          />
+          <label htmlFor="topad">Enable Top Text Ad</label>
+        </div>
+        {form.topAdEnabled && (
+          <>
+            <label>Top Text Ad Text</label>
+            <textarea
+              value={form.topAdText}
+              onChange={(e) => set("topAdText", e.target.value)}
+              style={{ minHeight: 60 }}
+              placeholder="Two-line promotional text…"
+            />
+            <label>Top Text Ad Link (optional)</label>
+            <input
+              type="url"
+              value={form.topAdLink}
+              onChange={(e) => set("topAdLink", e.target.value)}
+              placeholder="https://…"
+            />
+            <div className="hint">Box shows when enabled and text is present; the link is optional.</div>
+          </>
+        )}
+      </div>
+
       <h2>Action To Take box (optional)</h2>
       <div className="adm-card">
         <div className="hint">Leave empty to hide the entire box.</div>
@@ -201,6 +263,12 @@ export default function PostEditor({
         </Link>
       </div>
       {err && <div className="adm-err">{err}</div>}
+
+      <h2>Live preview</h2>
+      <div className="hint" style={{ marginBottom: 10 }}>
+        How this post will render on its public page. Updates as you edit.
+      </div>
+      <PostPreview values={form} logoUrl={listLogo} listName={listName} />
     </>
   );
 }

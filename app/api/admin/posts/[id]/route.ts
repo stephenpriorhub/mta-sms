@@ -29,6 +29,9 @@ export async function PUT(
   if ("publishDate" in body && body.publishDate)
     data.publishDate = new Date(body.publishDate);
   if ("content" in body) data.content = body.content || "";
+  if ("topAdEnabled" in body) data.topAdEnabled = !!body.topAdEnabled;
+  if ("topAdText" in body) data.topAdText = body.topAdText || null;
+  if ("topAdLink" in body) data.topAdLink = body.topAdLink || null;
   if ("actionToTake" in body) data.actionToTake = body.actionToTake || null;
   if ("actionSecondary" in body)
     data.actionSecondary = body.actionSecondary || null;

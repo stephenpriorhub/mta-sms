@@ -15,9 +15,7 @@ interface ListData {
   name: string;
   slug: string;
   logoUrl: string | null;
-  topAdEnabled: boolean;
-  topAdText: string | null;
-  topAdLink: string | null;
+  category: string | null;
   archivesEnabled: boolean;
   posts: Post[];
 }
@@ -171,33 +169,16 @@ export default function ManageList() {
           </div>
         )}
 
-        <div className="checkline">
-          <input
-            type="checkbox"
-            id="topad"
-            checked={list.topAdEnabled}
-            onChange={(e) => set("topAdEnabled", e.target.checked)}
-          />
-          <label htmlFor="topad">Enable Top Text Ad</label>
+        <label>Category (internal only)</label>
+        <input
+          type="text"
+          value={list.category ?? ""}
+          onChange={(e) => set("category", e.target.value)}
+          placeholder="e.g. War Room, Free lists…"
+        />
+        <div className="hint">
+          For your organization only — never shown on any public page.
         </div>
-        {list.topAdEnabled && (
-          <>
-            <label>Top Text Ad Text</label>
-            <textarea
-              value={list.topAdText ?? ""}
-              onChange={(e) => set("topAdText", e.target.value)}
-              style={{ minHeight: 60 }}
-              placeholder="Two-line promotional text…"
-            />
-            <label>Top Text Ad Link</label>
-            <input
-              type="url"
-              value={list.topAdLink ?? ""}
-              onChange={(e) => set("topAdLink", e.target.value)}
-              placeholder="https://…"
-            />
-          </>
-        )}
 
         <div className="checkline">
           <input

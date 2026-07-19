@@ -14,19 +14,20 @@ html {
 }
 .adm-topbar {
   display: flex;
-  align-items: baseline;
-  gap: 10px;
-  padding-bottom: 14px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid var(--line);
+  align-items: center;
+  gap: 12px;
+  background: var(--navy);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 22px;
 }
 .adm-brand {
-  color: var(--navy);
-  font-weight: 700;
-  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
   text-decoration: none;
 }
-.adm-sub { color: var(--muted); font-size: 13px; }
+.adm-brand-logo { max-height: 30px; width: auto; display: block; }
+.adm-sub { color: var(--cream); font-size: 13px; opacity: .75; }
 .adm-main { }
 
 .adm h1 { color: var(--navy); font-size: 22px; margin: 0 0 4px; }
@@ -84,3 +85,51 @@ html {
 .adm-toast { font-size: 13px; color: #067647; margin-top: 8px; }
 .adm-err { font-size: 13px; color: #b42318; margin-top: 8px; }
 .adm-actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+
+/* Home hero: New Post is the primary, top-of-page action. */
+.adm-hero {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 22px 20px;
+  margin-bottom: 18px;
+}
+.adm-hero h1 { margin: 0 0 4px; }
+.adm-hero .adm-hero-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 14px;
+}
+.adm-hero select {
+  flex: 1 1 220px;
+  min-width: 200px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 11px;
+  font: inherit;
+  color: var(--ink);
+  background: #fff;
+}
+.adm-btn.big { padding: 11px 22px; font-size: 15px; }
+
+.adm-cat-head {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin: 20px 0 8px;
+}
+
+/* Live preview frame in the post editor (mirrors the public mobile view). */
+.tl-preview-frame {
+  max-width: 420px;
+  margin: 0 auto;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--bg);
+  box-shadow: 0 2px 14px rgba(15, 36, 64, .08);
+}

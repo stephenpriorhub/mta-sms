@@ -15,8 +15,10 @@ export default function AdminLayout({
   return (
     <div className="adm">
       <div className="adm-topbar">
-        <Link href="/admin" className="adm-brand">
-          MTA T-Letter Sites
+        <Link href="/admin" className="adm-brand" aria-label="MTA T-Letter Sites">
+          {/* Default header logo is ALWAYS the MTA cream image, never text. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="adm-brand-logo" src="/logo-cream.png" alt="MTA T-Letter Sites" />
         </Link>
         <span className="adm-sub">Admin</span>
       </div>

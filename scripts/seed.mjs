@@ -13,10 +13,7 @@ async function main() {
     create: {
       name: "Trade of the Day",
       slug: DEMO_SLUG,
-      topAdEnabled: true,
-      topAdText:
-        "Sponsored: See the full War Room briefing — this week's highest-conviction setups.\nLimited seats for new members.",
-      topAdLink: "https://monumenttradersalliance.com",
+      category: "Demo",
       archivesEnabled: true,
     },
   });
@@ -27,6 +24,10 @@ async function main() {
       data: {
         listId: list.id,
         title: "Why This Setup Has My Full Attention",
+        topAdEnabled: true,
+        topAdText:
+          "Sponsored: See the full War Room briefing — this week's highest-conviction setups.\nLimited seats for new members.",
+        topAdLink: "https://monumenttradersalliance.com",
         content:
           "<p>Good morning. The market handed us a rare signal overnight, and I want to walk you through exactly what I'm seeing before the open.</p>" +
           "<p>Volatility compressed to a multi-week low while volume quietly built underneath. That combination has preceded some of the sharpest moves we've traded this year.</p>" +
