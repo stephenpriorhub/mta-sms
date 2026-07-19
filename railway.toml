@@ -1,0 +1,17 @@
+# Railway deploy config for mta-sms (MTA T-Letter Sites).
+# Push to main -> Railway autodeploys. Postgres provisioned as a separate service;
+# DATABASE_URL injected via Railway variable reference.
+[build]
+builder = "nixpacks"
+buildCommand = "npm run build"
+
+[deploy]
+startCommand = "npm run start:prod"
+# Greenfield app: sync schema directly (no migration history yet). Idempotent and
+# runs before the new version takes traffic. Switch to `prisma migrate deploy`
+# once we adopt a migrations folder.
+preDeployCommand = "npx prisma db push --accept-data-loss"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3

@@ -1,0 +1,86 @@
+/* hub-nav.js gate: the admin surface starts HIDDEN and is revealed only after
+ * hub-nav.js confirms an authorized OxfordHub user (it sets
+ * document.documentElement.style.visibility = "visible"). This file loads ONLY
+ * on /admin routes, so the public T-Letter pages are never hidden. */
+html {
+  visibility: hidden;
+}
+
+.adm {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 20px 16px 80px;
+  color: var(--ink);
+}
+.adm-topbar {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding-bottom: 14px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+}
+.adm-brand {
+  color: var(--navy);
+  font-weight: 700;
+  font-size: 18px;
+  text-decoration: none;
+}
+.adm-sub { color: var(--muted); font-size: 13px; }
+.adm-main { }
+
+.adm h1 { color: var(--navy); font-size: 22px; margin: 0 0 4px; }
+.adm h2 { color: var(--navy); font-size: 17px; margin: 26px 0 10px; }
+.adm p.muted { color: var(--muted); font-size: 14px; }
+
+.adm-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+}
+.adm-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+
+.adm label { display: block; font-size: 13px; font-weight: 600; color: var(--navy); margin: 14px 0 5px; }
+.adm input[type=text],
+.adm input[type=url],
+.adm input[type=datetime-local],
+.adm textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 11px;
+  font: inherit;
+  color: var(--ink);
+  background: #fff;
+}
+.adm textarea { min-height: 160px; resize: vertical; line-height: 1.5; }
+.adm .hint { font-size: 12px; color: var(--muted); font-weight: 400; margin-top: 4px; }
+
+.adm .checkline { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+.adm .checkline label { margin: 0; }
+.adm input[type=checkbox] { width: 16px; height: 16px; }
+
+.adm-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--navy); color: #fff; border: none; border-radius: 8px;
+  padding: 9px 16px; font: inherit; font-weight: 600; cursor: pointer;
+  text-decoration: none;
+}
+.adm-btn:hover { background: var(--navy-soft); }
+.adm-btn.secondary { background: #fff; color: var(--navy); border: 1px solid var(--line); }
+.adm-btn.danger { background: #fff; color: #b42318; border: 1px solid #f1c9c4; }
+.adm-btn:disabled { opacity: .5; cursor: default; }
+
+.adm-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.adm-table th { text-align: left; color: var(--muted); font-weight: 600; font-size: 12px; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+.adm-table td { padding: 10px 6px; border-bottom: 1px solid var(--line); }
+.adm-table a { color: var(--accent); text-decoration: none; }
+
+.adm-badge { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: var(--callout-bg); color: var(--navy-soft); border: 1px solid var(--callout-border); }
+.adm-badge.warn { background: #fef6e7; color: #a15c07; border-color: #f5e0b8; }
+
+.adm-toast { font-size: 13px; color: #067647; margin-top: 8px; }
+.adm-err { font-size: 13px; color: #b42318; margin-top: 8px; }
+.adm-actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }

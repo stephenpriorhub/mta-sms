@@ -1,0 +1,97 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// A T-Letter list. Fully isolated on the public site: its own /[slug] page, its
+// own branding, and NO navigation to sibling lists.
+model List {
+  id              String   @id @default(cuid())
+  name            String
+  slug            String   @unique
+  logoUrl         String? // falls back to the MTA cream logo when null
+  // Top text-ad box (2-line light-grey link) rendered at the very top.
+  topAdEnabled    Boolean  @default(false)
+  topAdText       String?
+  topAdLink       String?
+  // "View Archives" accordion at the bottom of the public page.
+  archivesEnabled Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  posts      Post[]
+  pageViews  PageView[]
+  linkClicks LinkClick[]
+
+  @@index([slug])
+}
+
+// A post belongs to exactly one list. Publish date in the future => scheduled and
+// hidden publicly until that date.
+model Post {
+  id              String   @id @default(cuid())
+  listId          String
+  title           String?
+  publishDate     DateTime @default(now())
+  content         String   @db.Text // sanitized HTML (links + inline images)
+  // Optional "ACTION TO TAKE" callout box. If actionToTake is empty the whole box hides.
+  actionToTake    String?  @db.Text
+  actionSecondary String? // optional secondary plain-text line inside the box
+  // Optional button: rendered only if BOTH fields are present.
+  buttonText      String?
+  buttonUrl       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  list       List        @relation(fields: [listId], references: [id], onDelete: Cascade)
+  pageViews  PageView[]
+  linkClicks LinkClick[]
+
+  @@index([listId, publishDate])
+}
+
+// First-party page view (recorded via a tracking pixel). postId null => list index view.
+model PageView {
+  id     String   @id @default(cuid())
+  listId String
+  postId String?
+  ts     DateTime @default(now())
+
+  list List  @relation(fields: [listId], references: [id], onDelete: Cascade)
+  post Post? @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([listId, ts])
+  @@index([postId, ts])
+}
+
+// First-party link click (recorded via the /r redirect endpoint).
+model LinkClick {
+  id     String   @id @default(cuid())
+  listId String
+  postId String
+  url    String   @db.Text
+  label  String? // e.g. "action-button", or the link text
+  ts     DateTime @default(now())
+
+  list List @relation(fields: [listId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId, ts])
+  @@index([listId, ts])
+}
+
+// Uploaded image, resized/compressed to webp at upload time and stored inline.
+// Served via /api/img/[id] with long cache headers.
+model Asset {
+  id        String   @id @default(cuid())
+  mime      String   @default("image/webp")
+  width     Int?
+  height    Int?
+  bytes     Bytes
+  createdAt DateTime @default(now())
+}
