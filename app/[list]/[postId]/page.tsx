@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import PublicPost, { type ArchiveItem } from "@/components/PublicPost";
+import { SITE_URL, publicPostUrl } from "@/lib/site";
 
 export const revalidate = 60;
 
@@ -21,7 +22,19 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { list: slug, postId } = await params;
   const data = await load(slug, postId);
-  return { title: data?.post.title ?? data?.list.name ?? "MTA T-Letter" };
+  const title = data?.post.title ?? data?.list.name ?? "MTA T-Letter";
+  const canonical = publicPostUrl(slug, postId);
+  return {
+    metadataBase: new URL(SITE_URL),
+    title,
+    alternates: { canonical },
+    openGraph: {
+      url: canonical,
+      title,
+      siteName: data?.list.name ?? "MTA T-Letter",
+      type: "article",
+    },
+  };
 }
 
 export default async function PostPage({

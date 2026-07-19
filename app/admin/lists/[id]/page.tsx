@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { normalizeSlug, isValidSlug, randomSlug } from "@/lib/slug";
+import { publicListUrl, publicPostUrl } from "@/lib/site";
 
 interface Post {
   id: string;
@@ -110,8 +111,8 @@ export default function ManageList() {
       <h1>{list.name}</h1>
       <p className="muted">
         Public page:{" "}
-        <a href={`/${list.slug}`} target="_blank" rel="noreferrer">
-          /{list.slug}
+        <a href={publicListUrl(list.slug)} target="_blank" rel="noreferrer">
+          {publicListUrl(list.slug)}
         </a>
       </p>
 
@@ -236,6 +237,14 @@ export default function ManageList() {
                   <td>{stats?.views ?? 0}</td>
                   <td>{stats?.links.reduce((s, l) => s + l.clicks, 0) ?? 0}</td>
                   <td>
+                    <a
+                      href={publicPostUrl(list.slug, p.id)}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      View
+                    </a>
+                    {"  "}
                     <Link href={`/admin/lists/${id}/posts/${p.id}`}>Edit</Link>
                   </td>
                   <td>

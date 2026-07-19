@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import PostPreview from "@/components/admin/PostPreview";
+import RichTextEditor from "@/components/admin/RichTextEditor";
 
 interface PostForm {
   title: string;
@@ -52,7 +53,6 @@ export default function PostEditor({
   const [form, setForm] = useState<PostForm>(empty());
   const [loading, setLoading] = useState(!!postId);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [err, setErr] = useState("");
   const [listName, setListName] = useState("");
   const [listLogo, setListLogo] = useState<string | null>(null);
@@ -94,21 +94,6 @@ export default function PostEditor({
 
   function set<K extends keyof PostForm>(k: K, v: PostForm[K]) {
     setForm((p) => ({ ...p, [k]: v }));
-  }
-
-  async function insertImage(file: File) {
-    setUploading(true);
-    setErr("");
-    const fd = new FormData();
-    fd.append("file", file);
-    const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
-    setUploading(false);
-    if (res.ok) {
-      const { url } = await res.json();
-      set("content", `${form.content}\n<img src="${url}" alt="" />\n`);
-    } else {
-      setErr("Image upload failed");
-    }
   }
 
   async function save() {
@@ -168,22 +153,13 @@ export default function PostEditor({
         </div>
 
         <label>Content</label>
-        <textarea
+        <RichTextEditor
           value={form.content}
-          onChange={(e) => set("content", e.target.value)}
-          placeholder="Body HTML — supports links and inline images."
+          onChange={(html) => set("content", html)}
         />
-        <div className="hint">HTML supported: paragraphs, links, images, bold, lists.</div>
-        <div className="adm-actions">
-          <label className="adm-btn secondary" style={{ cursor: "pointer", margin: 0 }}>
-            {uploading ? "Uploading…" : "Upload image"}
-            <input
-              type="file"
-              accept="image/*"
-              style={{ display: "none" }}
-              onChange={(e) => e.target.files?.[0] && insertImage(e.target.files[0])}
-            />
-          </label>
+        <div className="hint">
+          Use the toolbar for bold, italic, underline, links, images, and tables.
+          Enter starts a new paragraph; Shift+Enter is a line break.
         </div>
       </div>
 

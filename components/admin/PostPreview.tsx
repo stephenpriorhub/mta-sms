@@ -1,6 +1,6 @@
 "use client";
 
-import { sanitizeHtml } from "@/lib/content";
+import { sanitizeHtml, normalizeContentHtml, wrapTables } from "@/lib/content";
 import { CRITICAL_CSS } from "@/components/PublicPost";
 
 // Lightweight, client-side live preview of a post. Uses the SAME markup, class
@@ -43,7 +43,7 @@ export default function PostPreview({
   const showTopAd = values.topAdEnabled && values.topAdText.trim().length > 0;
   const showAction = values.actionToTake.trim().length > 0;
   const showButton = !!values.buttonText.trim() && !!values.buttonUrl.trim();
-  const bodyHtml = sanitizeHtml(values.content);
+  const bodyHtml = wrapTables(sanitizeHtml(normalizeContentHtml(values.content)));
 
   return (
     <div className="tl-preview">

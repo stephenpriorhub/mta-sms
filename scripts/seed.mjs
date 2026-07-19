@@ -32,6 +32,9 @@ async function main() {
           "<p>Good morning. The market handed us a rare signal overnight, and I want to walk you through exactly what I'm seeing before the open.</p>" +
           "<p>Volatility compressed to a multi-week low while volume quietly built underneath. That combination has preceded some of the sharpest moves we've traded this year.</p>" +
           '<p>Here is the key level I\'m watching, and <a href="https://monumenttradersalliance.com">the full breakdown is here</a>.</p>' +
+          "<table><thead><tr><th>Ticker</th><th>Entry</th><th>Stop</th><th>Target</th></tr></thead>" +
+          "<tbody><tr><td>NVO</td><td>$52.00</td><td>$47.50</td><td>$61.00</td></tr>" +
+          "<tr><td>Trend</td><td>Bullish</td><td>2–6 wks</td><td>Swing</td></tr></tbody></table>" +
           "<p>Manage your risk, size sensibly, and let the setup come to you.</p>",
         actionToTake:
           "Consider buying shares of Novo Nordisk (NVO) up to $52.00, with a stop at $47.50 and a target near $61.",

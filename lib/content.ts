@@ -25,6 +25,45 @@ export function sanitizeHtml(html: string): string {
   return out;
 }
 
+// Block-level tags that signal the content is already structured HTML.
+const BLOCK_RE =
+  /<(p|div|ul|ol|li|table|thead|tbody|tr|td|th|h[1-6]|blockquote|pre|figure)\b/i;
+
+/**
+ * Ensure post content has real paragraph/line-break structure so it renders with
+ * proper vertical spacing (and never "mushed together").
+ *
+ * - If the content already contains block-level tags, it's treated as authored
+ *   HTML and returned unchanged.
+ * - Otherwise it's legacy/plain text (which may still contain inline tags like
+ *   <a>/<b>): blank lines become paragraph breaks and single newlines become
+ *   <br>. This migrates older posts that were saved as plain text with newlines.
+ */
+export function normalizeContentHtml(input: string): string {
+  if (!input) return "";
+  const html = input.trim();
+  if (!html) return "";
+  if (BLOCK_RE.test(html)) return html;
+  return html
+    .split(/\r?\n\s*\r?\n/)
+    .map((block) => block.trim())
+    .filter((block) => block.length > 0)
+    .map((block) => `<p>${block.replace(/\r?\n/g, "<br>")}</p>`)
+    .join("");
+}
+
+/**
+ * Wrap every <table> in a horizontally-scrollable container so wide tables
+ * scroll on mobile instead of breaking the layout. Applied on the public side.
+ */
+export function wrapTables(html: string): string {
+  if (!html) return "";
+  return html.replace(
+    /<table\b[\s\S]*?<\/table>/gi,
+    (m) => `<div class="tl-tablewrap">${m}</div>`
+  );
+}
+
 const HTTP_URL = /^https?:\/\//i;
 
 /**

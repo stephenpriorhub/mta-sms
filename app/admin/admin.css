@@ -123,6 +123,30 @@ html {
   margin: 20px 0 8px;
 }
 
+/* Rich-text editor (admin-only; produces clean HTML for the public page). */
+.rte { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #fff; }
+.rte-toolbar {
+  display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
+  padding: 6px 8px; border-bottom: 1px solid var(--line); background: #f8fafc;
+}
+.rte-btn {
+  min-width: 30px; padding: 5px 9px; font: inherit; font-size: 13px; line-height: 1;
+  border: 1px solid var(--line); background: #fff; border-radius: 6px; cursor: pointer;
+  color: var(--ink);
+}
+.rte-btn:hover { background: var(--callout-bg); }
+.rte-sep { width: 1px; height: 20px; background: var(--line); margin: 0 4px; }
+.rte-area {
+  min-height: 220px; padding: 14px 16px; outline: none; color: var(--article-ink);
+  font-size: 16px; line-height: 1.6; overflow-x: auto;
+}
+.rte-area p { margin: 0 0 1em; }
+.rte-area a { color: var(--accent); }
+.rte-area img { max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0; }
+.rte-area table { border-collapse: collapse; width: 100%; font-size: 15px; margin: 10px 0; }
+.rte-area th, .rte-area td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+.rte-area th { background: #f0f2f6; font-weight: 700; }
+
 /* Live preview frame in the post editor (mirrors the public mobile view). */
 .tl-preview-frame {
   max-width: 420px;

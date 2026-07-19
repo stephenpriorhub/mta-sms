@@ -1,4 +1,10 @@
-import { sanitizeHtml, rewriteLinksForTracking, trackedHref } from "@/lib/content";
+import {
+  sanitizeHtml,
+  rewriteLinksForTracking,
+  trackedHref,
+  normalizeContentHtml,
+  wrapTables,
+} from "@/lib/content";
 
 // Minimal, mobile-first. Ships ZERO client JavaScript: the archives accordion is
 // a native <details>, page views use an <img> pixel, and link clicks go through
@@ -33,6 +39,9 @@ export interface ArchiveItem {
   publishDate: Date;
 }
 
+// Header logo always links out to the main MTA site.
+const MTA_URL = "https://monumenttradersalliance.com";
+
 function fmtDate(d: Date): string {
   return new Date(d).toLocaleDateString("en-US", {
     year: "numeric",
@@ -43,7 +52,8 @@ function fmtDate(d: Date): string {
 
 export const CRITICAL_CSS = `
 .tl-header{background:var(--navy);padding:14px 18px;display:flex;justify-content:center;align-items:center}
-.tl-logo-img{max-height:34px;width:auto}
+.tl-logo-link{display:inline-flex;align-items:center;text-decoration:none}
+.tl-logo-img{max-height:34px;width:auto;display:block}
 .tl-logo-text{color:var(--cream);font-weight:700;letter-spacing:.14em;font-size:13px;text-transform:uppercase}
 .tl-wrap{max-width:680px;margin:0 auto;padding:18px 16px 56px}
 .tl-topad{display:block;background:#f0f2f6;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:18px;font-size:13px;line-height:1.45;text-align:center}
@@ -58,6 +68,11 @@ div.tl-topad{color:var(--muted)}
 .tl-body p:last-child{margin-bottom:0}
 .tl-body img{border-radius:8px;margin:14px 0}
 .tl-body a{color:var(--accent)}
+.tl-tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:14px 0}
+.tl-body table{border-collapse:collapse;width:100%;font-size:15px}
+.tl-body th,.tl-body td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.tl-body th{background:#f0f2f6;font-weight:700}
+.tl-body table p{margin:0}
 .tl-action{background:var(--callout-bg);border-radius:8px;padding:20px;margin-top:24px}
 .tl-action-line{color:var(--article-ink);font-size:21.5px;line-height:1.45;margin:0}
 .tl-action-label{font-weight:700;color:var(--article-ink)}
@@ -67,8 +82,12 @@ div.tl-topad{color:var(--muted)}
 .tl-action-secondary{color:var(--action-muted);font-size:12.5px;font-style:italic;line-height:1.5;margin:10px 0 0}
 .tl-btn{display:block;width:fit-content;background:var(--navy);color:#fff;text-decoration:none;font-weight:600;font-size:15px;padding:11px 22px;border-radius:8px;margin:16px auto 0}
 .tl-btn:hover{background:var(--navy-soft)}
-.tl-archives{margin-top:26px;border-top:1px solid var(--line);padding-top:14px}
-.tl-archives summary{cursor:pointer;color:var(--muted);font-size:14px;font-weight:600;list-style:none}
+.tl-footer{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px;margin-top:26px;border-top:1px solid var(--line);padding-top:14px;font-size:11.5px;line-height:1.35;color:var(--muted)}
+.tl-footer-left{text-align:left}
+.tl-footer-center{text-align:center}
+.tl-footer-right{text-align:right;color:var(--accent);font-weight:700;white-space:nowrap}
+.tl-archives{margin:0}
+.tl-archives summary{cursor:pointer;list-style:none}
 .tl-archives summary::-webkit-details-marker{display:none}
 .tl-archives ul{list-style:none;padding:0;margin:12px 0 0}
 .tl-archives li{padding:8px 0;border-bottom:1px solid var(--line)}
@@ -86,25 +105,35 @@ export default function PublicPost({
   post: PublicPostData;
   archives: ArchiveItem[];
 }) {
-  const bodyHtml = rewriteLinksForTracking(sanitizeHtml(post.content), post.id);
+  const bodyHtml = wrapTables(
+    rewriteLinksForTracking(
+      sanitizeHtml(normalizeContentHtml(post.content)),
+      post.id
+    )
+  );
   const showAction = !!post.actionToTake && post.actionToTake.trim().length > 0;
   const showButton = !!post.buttonText?.trim() && !!post.buttonUrl?.trim();
   // Top ad now lives on the POST: show whenever enabled + text present (link optional).
   const showTopAd = post.topAdEnabled && !!post.topAdText?.trim();
   const topAdHasLink = !!post.topAdLink?.trim();
+  const showArchives = list.archivesEnabled && archives.length > 0;
+  const year = new Date().getFullYear();
 
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: CRITICAL_CSS }} />
 
       <header className="tl-header">
-        {/* Per-list logo overrides; default is the MTA cream wordmark. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          className="tl-logo-img"
-          src={list.logoUrl || "/logo-cream.png"}
-          alt={list.name}
-        />
+        {/* Header logo always links out to the MTA site (default + custom logos). */}
+        <a href={MTA_URL} target="_blank" rel="noopener" className="tl-logo-link">
+          {/* Per-list logo overrides; default is the MTA cream wordmark. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            className="tl-logo-img"
+            src={list.logoUrl || "/logo-cream.png"}
+            alt={list.name}
+          />
+        </a>
       </header>
 
       <main className="tl-wrap">
@@ -160,9 +189,17 @@ export default function PublicPost({
           )}
         </article>
 
-        {list.archivesEnabled && archives.length > 0 && (
+        {/* Footer row (3 columns) above the archives. Isolated per-list: no links
+            to sibling lists. The right column doubles as the View Archives toggle. */}
+        {showArchives ? (
           <details className="tl-archives">
-            <summary>View Archives</summary>
+            <summary className="tl-footer">
+              <span className="tl-footer-left">{list.name}</span>
+              <span className="tl-footer-center">
+                &copy; {year} Monument Traders Alliance
+              </span>
+              <span className="tl-footer-right">View Archives</span>
+            </summary>
             <ul>
               {archives.map((a) => (
                 <li key={a.id}>
@@ -174,6 +211,14 @@ export default function PublicPost({
               ))}
             </ul>
           </details>
+        ) : (
+          <div className="tl-footer">
+            <span className="tl-footer-left">{list.name}</span>
+            <span className="tl-footer-center">
+              &copy; {year} Monument Traders Alliance
+            </span>
+            <span className="tl-footer-right" />
+          </div>
         )}
       </main>
 

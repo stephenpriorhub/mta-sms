@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { normalizeSlug, isValidSlug, randomSlug } from "@/lib/slug";
+import { publicListUrl } from "@/lib/site";
 
 interface ListRow {
   id: string;
@@ -279,7 +280,7 @@ export default function AdminHome() {
                   <tr key={l.id}>
                     <td>{l.name}</td>
                     <td>
-                      <a href={`/${l.slug}`} target="_blank" rel="noreferrer">
+                      <a href={publicListUrl(l.slug)} target="_blank" rel="noreferrer">
                         /{l.slug}
                       </a>
                     </td>

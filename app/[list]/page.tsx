@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import PublicPost, { type ArchiveItem } from "@/components/PublicPost";
+import { SITE_URL, publicListUrl } from "@/lib/site";
 
 // ISR: cached HTML for speed, refreshed often enough to reveal scheduled posts.
 export const revalidate = 60;
@@ -17,7 +18,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { list: slug } = await params;
   const list = await getList(slug);
-  return { title: list?.name ?? "MTA T-Letter" };
+  const title = list?.name ?? "MTA T-Letter";
+  const canonical = publicListUrl(slug);
+  return {
+    metadataBase: new URL(SITE_URL),
+    title,
+    alternates: { canonical },
+    openGraph: { url: canonical, title, siteName: title, type: "website" },
+  };
 }
 
 export default async function ListPage({
@@ -47,13 +55,20 @@ export default async function ListPage({
             alignItems: "center",
           }}
         >
-          {/* Default header logo is ALWAYS the MTA cream image, never text. */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={list.logoUrl || "/logo-cream.png"}
-            alt={list.name}
-            style={{ maxHeight: 34, width: "auto" }}
-          />
+          {/* Default header logo is ALWAYS the MTA cream image, never text; links to MTA. */}
+          <a
+            href="https://monumenttradersalliance.com"
+            target="_blank"
+            rel="noopener"
+            style={{ display: "inline-flex", alignItems: "center" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={list.logoUrl || "/logo-cream.png"}
+              alt={list.name}
+              style={{ maxHeight: 34, width: "auto", display: "block" }}
+            />
+          </a>
         </header>
         <main style={{ maxWidth: 680, margin: "0 auto", padding: "40px 16px", color: "var(--muted)" }}>
           No posts yet.
