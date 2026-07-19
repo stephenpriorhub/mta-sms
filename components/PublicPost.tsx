@@ -47,16 +47,21 @@ const CRITICAL_CSS = `
 .tl-wrap{max-width:680px;margin:0 auto;padding:18px 16px 56px}
 .tl-topad{display:block;background:#f0f2f6;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:18px;color:var(--muted);font-size:13px;line-height:1.45;text-decoration:none}
 .tl-topad:hover{background:#e9edf3}
-.tl-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px 20px;box-shadow:0 1px 2px rgba(15,36,64,.04)}
+.tl-card{background:var(--card);border-radius:var(--radius);padding:24px 20px 8px}
 .tl-date{color:var(--muted);font-size:13px;margin:0 0 6px}
 .tl-title{color:var(--navy);font-size:24px;line-height:1.25;font-weight:700;margin:0 0 16px}
-.tl-body{color:var(--ink);font-size:16px;word-break:break-word}
+.tl-body{color:var(--article-ink);font-size:16.5px;line-height:1.6;word-break:break-word}
+.tl-body p{margin:0 0 1em}
+.tl-body p:last-child{margin-bottom:0}
 .tl-body img{border-radius:8px;margin:14px 0}
 .tl-body a{color:var(--accent)}
-.tl-action{background:var(--callout-bg);border:1px solid var(--callout-border);border-radius:10px;padding:16px 18px;margin-top:22px}
-.tl-action-label{color:var(--navy);font-weight:800;font-size:12px;letter-spacing:.1em;margin:0 0 8px}
-.tl-action-body{color:var(--ink);font-size:15px}
-.tl-action-secondary{color:var(--muted);font-size:14px;margin-top:8px}
+.tl-action{background:var(--callout-bg);border-radius:8px;padding:20px;margin-top:24px}
+.tl-action-line{color:var(--article-ink);font-size:15.5px;line-height:1.55;margin:0}
+.tl-action-label{font-weight:700;color:var(--article-ink)}
+.tl-action-text{color:var(--action-green);font-weight:700}
+.tl-action-text p{display:inline;margin:0}
+.tl-action-text a{color:var(--action-green)}
+.tl-action-secondary{color:var(--action-muted);font-size:12.5px;font-style:italic;line-height:1.5;margin:10px 0 0}
 .tl-btn{display:inline-block;background:var(--navy);color:#fff;text-decoration:none;font-weight:600;font-size:15px;padding:11px 22px;border-radius:8px;margin-top:14px}
 .tl-btn:hover{background:var(--navy-soft)}
 .tl-archives{margin-top:26px;border-top:1px solid var(--line);padding-top:14px}
@@ -120,16 +125,18 @@ export default function PublicPost({
 
           {showAction && (
             <div className="tl-action">
-              <p className="tl-action-label">ACTION TO TAKE</p>
-              <div
-                className="tl-action-body"
-                dangerouslySetInnerHTML={{
-                  __html: rewriteLinksForTracking(
-                    sanitizeHtml(post.actionToTake!),
-                    post.id
-                  ),
-                }}
-              />
+              <div className="tl-action-line">
+                <strong className="tl-action-label">Action to take:</strong>{" "}
+                <span
+                  className="tl-action-text"
+                  dangerouslySetInnerHTML={{
+                    __html: rewriteLinksForTracking(
+                      sanitizeHtml(post.actionToTake!),
+                      post.id
+                    ),
+                  }}
+                />
+              </div>
               {post.actionSecondary?.trim() && (
                 <p className="tl-action-secondary">{post.actionSecondary}</p>
               )}

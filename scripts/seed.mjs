@@ -33,8 +33,9 @@ async function main() {
           '<p>Here is the key level I\'m watching, and <a href="https://monumenttradersalliance.com">the full breakdown is here</a>.</p>' +
           "<p>Manage your risk, size sensibly, and let the setup come to you.</p>",
         actionToTake:
-          "<p>Buy shares up to <strong>$52.00</strong>. Set a stop at $47.50. Target the prior high near $61.</p>",
-        actionSecondary: "This is a swing position — plan to hold 2 to 6 weeks.",
+          "Consider buying shares of Novo Nordisk (NVO) up to $52.00, with a stop at $47.50 and a target near $61.",
+        actionSecondary:
+          "Past performance is not indicative of future results. This is a swing position — plan to hold 2 to 6 weeks and size sensibly.",
         buttonText: "See the Full Briefing",
         buttonUrl: "https://monumenttradersalliance.com",
       },

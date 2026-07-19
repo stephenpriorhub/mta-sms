@@ -6,8 +6,11 @@
   --ink: #1f2a37;
   --muted: #64748b;
   --line: #e4e9f0;
-  --callout-bg: #eef3f9;    /* subtle light grey/blue callout */
-  --callout-border: #d3e0ef;
+  --callout-bg: #f2f2f2;    /* light grey Action-to-take box */
+  --callout-border: transparent;
+  --article-ink: #1a1a1a;   /* near-black article body text */
+  --action-green: #2e9b3f;  /* bold green action text */
+  --action-muted: #666666;  /* italic secondary disclaimer */
   --cream: #f5efe0;         /* logo / header text on navy */
   --accent: #1c5fd6;
   --radius: 12px;
