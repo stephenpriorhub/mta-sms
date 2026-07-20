@@ -86,34 +86,6 @@ html {
 .adm-err { font-size: 13px; color: #b42318; margin-top: 8px; }
 .adm-actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
 
-/* Home hero: New Post is the primary, top-of-page action. */
-.adm-hero {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 22px 20px;
-  margin-bottom: 18px;
-}
-.adm-hero h1 { margin: 0 0 4px; }
-.adm-hero .adm-hero-row {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  align-items: center;
-  margin-top: 14px;
-}
-.adm-hero select {
-  flex: 1 1 220px;
-  min-width: 200px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 10px 11px;
-  font: inherit;
-  color: var(--ink);
-  background: #fff;
-}
-.adm-btn.big { padding: 11px 22px; font-size: 15px; }
-
 /* Post-category chips (per-list managed set). */
 .cat-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .cat-chip {
@@ -127,15 +99,6 @@ html {
 }
 .cat-chip-x:hover { color: #b42318; }
 .adm-badge.cat { background: #eef2fb; color: var(--navy-soft); border-color: #d7e0f2; }
-
-.adm-cat-head {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  margin: 20px 0 8px;
-}
 
 /* Rich-text editor (admin-only; produces clean HTML for the public page). */
 .rte { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #fff; }

@@ -49,7 +49,6 @@ export async function PUT(
     data.slug = slug;
   }
   if ("logoUrl" in body) data.logoUrl = body.logoUrl || null;
-  if ("category" in body) data.category = body.category || null;
   if ("postCategories" in body)
     data.postCategories = sanitizePostCategories(body.postCategories);
   if ("archivesEnabled" in body) data.archivesEnabled = !!body.archivesEnabled;

@@ -37,7 +37,6 @@ export async function POST(req: NextRequest) {
       name: body.name,
       slug,
       logoUrl: body.logoUrl || null,
-      category: body.category || null,
       postCategories: sanitizePostCategories(body.postCategories),
       archivesEnabled: !!body.archivesEnabled,
     },

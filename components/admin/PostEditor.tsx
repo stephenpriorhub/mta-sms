@@ -20,6 +20,12 @@ interface PostForm {
   buttonUrl: string;
 }
 
+export interface ListOption {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 const empty = (): PostForm => {
   const now = new Date();
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
@@ -44,26 +50,52 @@ function toLocalInput(iso: string): string {
   return d.toISOString().slice(0, 16);
 }
 
+const selectStyle: React.CSSProperties = {
+  width: "100%",
+  border: "1px solid var(--line)",
+  borderRadius: 8,
+  padding: "9px 11px",
+  font: "inherit",
+  background: "#fff",
+  color: "var(--ink)",
+};
+
 export default function PostEditor({
   listId,
   postId,
+  lists,
+  onCreated,
 }: {
-  listId: string;
+  // Per-list mode: listId fixed. Home mode: omit listId and pass `lists` so the
+  // publisher first picks which T-Letter to post into.
+  listId?: string;
   postId?: string;
+  lists?: ListOption[];
+  onCreated?: () => void;
 }) {
   const router = useRouter();
+  const homeMode = !!lists;
+
+  const [activeListId, setActiveListId] = useState(listId ?? "");
   const [form, setForm] = useState<PostForm>(empty());
   const [loading, setLoading] = useState(!!postId);
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
+  const [msg, setMsg] = useState("");
   const [listName, setListName] = useState("");
   const [listLogo, setListLogo] = useState<string | null>(null);
   const [listCategories, setListCategories] = useState<string[]>([]);
 
-  // Load the list (for the preview header + this list's post categories).
+  // Load the active list (preview header + this list's post categories).
   useEffect(() => {
+    if (!activeListId) {
+      setListName("");
+      setListLogo(null);
+      setListCategories([]);
+      return;
+    }
     (async () => {
-      const res = await fetch(`/api/admin/lists/${listId}`);
+      const res = await fetch(`/api/admin/lists/${activeListId}`);
       if (res.ok) {
         const { list } = await res.json();
         setListName(list.name);
@@ -71,7 +103,7 @@ export default function PostEditor({
         setListCategories(list.postCategories ?? []);
       }
     })();
-  }, [listId]);
+  }, [activeListId]);
 
   useEffect(() => {
     if (!postId) return;
@@ -101,11 +133,30 @@ export default function PostEditor({
     setForm((p) => ({ ...p, [k]: v }));
   }
 
+  function chooseList(id: string) {
+    setActiveListId(id);
+    // Categories are per-list, so a stale tag from another list must be cleared.
+    set("category", "");
+    setErr("");
+  }
+
+  function resetForm() {
+    setForm(empty());
+    if (homeMode) setActiveListId("");
+    setErr("");
+    setMsg("");
+  }
+
   async function save() {
+    if (!activeListId) {
+      setErr("Choose a T-Letter to post into.");
+      return;
+    }
     setSaving(true);
     setErr("");
+    setMsg("");
     const payload = {
-      listId,
+      listId: activeListId,
       title: form.title,
       category: form.category || null,
       publishDate: new Date(form.publishDate).toISOString(),
@@ -127,8 +178,18 @@ export default function PostEditor({
       }
     );
     setSaving(false);
-    if (res.ok) router.push(`/admin/lists/${listId}`);
-    else setErr((await res.json()).error || "Save failed");
+    if (!res.ok) {
+      setErr((await res.json()).error || "Save failed");
+      return;
+    }
+    if (homeMode) {
+      // Stay on the home; confirm and reset so the publisher can post again.
+      setMsg("Post created.");
+      resetForm();
+      onCreated?.();
+    } else {
+      router.push(`/admin/lists/${activeListId}`);
+    }
   }
 
   if (loading) return <p className="muted">Loading…</p>;
@@ -137,29 +198,50 @@ export default function PostEditor({
 
   return (
     <>
-      <p className="muted">
-        <Link href={`/admin/lists/${listId}`}>← Back to list</Link>
-      </p>
-      <h1>{postId ? "Edit post" : "New post"}</h1>
+      {homeMode ? (
+        <h1>New Post</h1>
+      ) : (
+        <>
+          <p className="muted">
+            <Link href={`/admin/lists/${listId}`}>← Back to list</Link>
+          </p>
+          <h1>{postId ? "Edit post" : "New post"}</h1>
+        </>
+      )}
 
       <div className="adm-card">
+        {homeMode && (
+          <>
+            <label>Post into which T-Letter</label>
+            <select
+              value={activeListId}
+              onChange={(e) => chooseList(e.target.value)}
+              style={selectStyle}
+              aria-label="Post into which T-Letter"
+            >
+              <option value="">Choose a T-Letter…</option>
+              {lists!.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.name} (/{l.slug})
+                </option>
+              ))}
+            </select>
+            <div className="hint">
+              Determines where the post is created and which post categories are
+              available.
+            </div>
+          </>
+        )}
+
         <label>Title (optional)</label>
         <input type="text" value={form.title} onChange={(e) => set("title", e.target.value)} />
 
         <label>Category (internal only)</label>
-        {listCategories.length > 0 ? (
+        {activeListId && listCategories.length > 0 ? (
           <select
             value={form.category}
             onChange={(e) => set("category", e.target.value)}
-            style={{
-              width: "100%",
-              border: "1px solid var(--line)",
-              borderRadius: 8,
-              padding: "9px 11px",
-              font: "inherit",
-              background: "#fff",
-              color: "var(--ink)",
-            }}
+            style={selectStyle}
           >
             <option value="">— None —</option>
             {listCategories.map((c) => (
@@ -170,8 +252,9 @@ export default function PostEditor({
           </select>
         ) : (
           <div className="hint">
-            No post categories defined for this list yet. Add them in the list’s
-            settings to tag posts.
+            {!activeListId
+              ? "Choose a T-Letter above to see its post categories."
+              : "No post categories defined for this list yet. Add them in the list’s settings to tag posts."}
           </div>
         )}
         <div className="hint">
@@ -270,12 +353,19 @@ export default function PostEditor({
 
       <div className="adm-actions">
         <button className="adm-btn" onClick={save} disabled={saving}>
-          {saving ? "Saving…" : "Save post"}
+          {saving ? "Saving…" : homeMode ? "Create post" : "Save post"}
         </button>
-        <Link className="adm-btn secondary" href={`/admin/lists/${listId}`}>
-          Cancel
-        </Link>
+        {homeMode ? (
+          <button className="adm-btn secondary" onClick={resetForm} disabled={saving}>
+            Clear
+          </button>
+        ) : (
+          <Link className="adm-btn secondary" href={`/admin/lists/${listId}`}>
+            Cancel
+          </Link>
+        )}
       </div>
+      {msg && <div className="adm-toast">{msg}</div>}
       {err && <div className="adm-err">{err}</div>}
 
       <h2>Live preview</h2>

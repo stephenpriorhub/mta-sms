@@ -18,7 +18,6 @@ interface ListData {
   name: string;
   slug: string;
   logoUrl: string | null;
-  category: string | null;
   postCategories: string[];
   archivesEnabled: boolean;
   posts: Post[];
@@ -173,17 +172,6 @@ export default function ManageList() {
             </button>
           </div>
         )}
-
-        <label>List Category (groups your T-Lists · internal only)</label>
-        <input
-          type="text"
-          value={list.category ?? ""}
-          onChange={(e) => set("category", e.target.value)}
-          placeholder="e.g. War Room, Free lists…"
-        />
-        <div className="hint">
-          Categorizes THIS list on the admin home. Never shown publicly.
-        </div>
 
         <label>Post Categories (tag posts in this list · internal only)</label>
         <PostCategoryManager

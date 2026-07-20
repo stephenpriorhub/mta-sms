@@ -1,37 +1,29 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { normalizeSlug, isValidSlug, randomSlug } from "@/lib/slug";
 import { publicListUrl } from "@/lib/site";
 import PostCategoryManager from "@/components/admin/PostCategoryManager";
+import PostEditor from "@/components/admin/PostEditor";
 
 interface ListRow {
   id: string;
   name: string;
   slug: string;
-  category: string | null;
   logoUrl: string | null;
   archivesEnabled: boolean;
   _count: { posts: number; pageViews: number };
 }
 
-const UNCATEGORIZED = "Uncategorized";
-
 export default function AdminHome() {
-  const router = useRouter();
   const [lists, setLists] = useState<ListRow[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // New Post hero
-  const [selectedListId, setSelectedListId] = useState("");
 
   // Add a T-List (inline form)
   const [showCreate, setShowCreate] = useState(false);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
-  const [category, setCategory] = useState("");
   const [postCategories, setPostCategories] = useState<string[]>([]);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [archivesEnabled, setArchivesEnabled] = useState(false);
@@ -48,11 +40,6 @@ export default function AdminHome() {
     load();
   }, []);
 
-  function composePost() {
-    if (!selectedListId) return;
-    router.push(`/admin/lists/${selectedListId}/posts/new`);
-  }
-
   async function uploadLogo(file: File) {
     setErr("");
     const fd = new FormData();
@@ -65,7 +52,6 @@ export default function AdminHome() {
   function resetCreate() {
     setName("");
     setSlug("");
-    setCategory("");
     setPostCategories([]);
     setLogoUrl(null);
     setArchivesEnabled(false);
@@ -86,7 +72,6 @@ export default function AdminHome() {
       body: JSON.stringify({
         name,
         slug,
-        category: category || null,
         postCategories,
         logoUrl,
         archivesEnabled,
@@ -102,58 +87,19 @@ export default function AdminHome() {
     }
   }
 
-  // Group existing lists by internal category (admin-only organization).
-  const grouped = useMemo(() => {
-    const map = new Map<string, ListRow[]>();
-    for (const l of lists) {
-      const key = l.category?.trim() || UNCATEGORIZED;
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(l);
-    }
-    return [...map.entries()].sort(([a], [b]) => {
-      if (a === UNCATEGORIZED) return 1;
-      if (b === UNCATEGORIZED) return -1;
-      return a.localeCompare(b);
-    });
-  }, [lists]);
-
   return (
     <>
-      {/* HERO: creating a post is the primary action. */}
-      <div className="adm-hero">
-        <h1>New Post</h1>
-        <p className="muted">
-          Pick the T-List this post belongs to, then compose it.
-        </p>
-        <div className="adm-hero-row">
-          <select
-            value={selectedListId}
-            onChange={(e) => setSelectedListId(e.target.value)}
-            aria-label="Choose a T-List"
-          >
-            <option value="">Choose a T-List…</option>
-            {lists.map((l) => (
-              <option key={l.id} value={l.id}>
-                {l.name} (/{l.slug})
-              </option>
-            ))}
-          </select>
-          <button
-            className="adm-btn big"
-            onClick={composePost}
-            disabled={!selectedListId}
-          >
-            Compose post →
-          </button>
-        </div>
-        {lists.length === 0 && !loading && (
-          <div className="hint" style={{ marginTop: 10 }}>
-            No T-Lists yet — add one below first.
-          </div>
-        )}
+      {/* PRIMARY ACTION: the full create-post form, inline at the very top. */}
+      <PostEditor lists={lists} onCreated={load} />
+
+      <div className="adm-actions" style={{ marginTop: 22 }}>
+        <a className="adm-btn secondary" href="#your-tlists">
+          ↓ Jump to your T-Lists
+        </a>
       </div>
 
       {/* ADD A T-LIST */}
+      <h2>Add a T-List</h2>
       <div className="adm-actions" style={{ marginTop: 0 }}>
         <button
           className="adm-btn secondary"
@@ -201,17 +147,6 @@ export default function AdminHome() {
               {slug && !isValidSlug(slug) && (
                 <span style={{ color: "#b42318" }}> (needs 5 characters)</span>
               )}
-            </div>
-
-            <label>List Category (groups your T-Lists · internal only)</label>
-            <input
-              type="text"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              placeholder="e.g. War Room, Free lists…"
-            />
-            <div className="hint">
-              Categorizes THIS list on the admin home. Never shown publicly.
             </div>
 
             <label>Post Categories (tag posts in this list · internal only)</label>
@@ -268,50 +203,47 @@ export default function AdminHome() {
         </div>
       )}
 
-      {/* EXISTING T-LISTS */}
-      <h2>Your T-Lists</h2>
+      {/* EXISTING T-LISTS (flat list — no category grouping). */}
+      <h2 id="your-tlists" style={{ scrollMarginTop: 16 }}>
+        Your T-Lists
+      </h2>
       {loading ? (
         <p className="muted">Loading…</p>
       ) : lists.length === 0 ? (
         <p className="muted">No lists yet.</p>
       ) : (
-        grouped.map(([cat, rows]) => (
-          <div key={cat}>
-            <div className="adm-cat-head">{cat}</div>
-            <table className="adm-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>URL</th>
-                  <th>Posts</th>
-                  <th>Views</th>
-                  <th></th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((l) => (
-                  <tr key={l.id}>
-                    <td>{l.name}</td>
-                    <td>
-                      <a href={publicListUrl(l.slug)} target="_blank" rel="noreferrer">
-                        /{l.slug}
-                      </a>
-                    </td>
-                    <td>{l._count.posts}</td>
-                    <td>{l._count.pageViews}</td>
-                    <td>
-                      <Link href={`/admin/lists/${l.id}`}>Past posts</Link>
-                    </td>
-                    <td>
-                      <Link href={`/admin/lists/${l.id}`}>Edit list</Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ))
+        <table className="adm-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>URL</th>
+              <th>Posts</th>
+              <th>Views</th>
+              <th></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {lists.map((l) => (
+              <tr key={l.id}>
+                <td>{l.name}</td>
+                <td>
+                  <a href={publicListUrl(l.slug)} target="_blank" rel="noreferrer">
+                    /{l.slug}
+                  </a>
+                </td>
+                <td>{l._count.posts}</td>
+                <td>{l._count.pageViews}</td>
+                <td>
+                  <Link href={`/admin/lists/${l.id}`}>Past posts</Link>
+                </td>
+                <td>
+                  <Link href={`/admin/lists/${l.id}`}>Edit list</Link>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
     </>
   );
