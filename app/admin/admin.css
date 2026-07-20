@@ -4,6 +4,7 @@
  * on /admin routes, so the public T-Letter pages are never hidden. */
 html {
   visibility: hidden;
+  scroll-behavior: smooth; /* smooth jump to #your-tlists */
 }
 
 .adm {
