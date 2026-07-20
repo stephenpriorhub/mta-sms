@@ -8,6 +8,7 @@ import RichTextEditor from "@/components/admin/RichTextEditor";
 
 interface PostForm {
   title: string;
+  category: string;
   publishDate: string; // datetime-local value
   content: string;
   topAdEnabled: boolean;
@@ -24,6 +25,7 @@ const empty = (): PostForm => {
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
   return {
     title: "",
+    category: "",
     publishDate: now.toISOString().slice(0, 16),
     content: "",
     topAdEnabled: false,
@@ -56,8 +58,9 @@ export default function PostEditor({
   const [err, setErr] = useState("");
   const [listName, setListName] = useState("");
   const [listLogo, setListLogo] = useState<string | null>(null);
+  const [listCategories, setListCategories] = useState<string[]>([]);
 
-  // Load the list (for the preview header) — logo + name.
+  // Load the list (for the preview header + this list's post categories).
   useEffect(() => {
     (async () => {
       const res = await fetch(`/api/admin/lists/${listId}`);
@@ -65,6 +68,7 @@ export default function PostEditor({
         const { list } = await res.json();
         setListName(list.name);
         setListLogo(list.logoUrl ?? null);
+        setListCategories(list.postCategories ?? []);
       }
     })();
   }, [listId]);
@@ -77,6 +81,7 @@ export default function PostEditor({
         const { post } = await res.json();
         setForm({
           title: post.title ?? "",
+          category: post.category ?? "",
           publishDate: toLocalInput(post.publishDate),
           content: post.content ?? "",
           topAdEnabled: !!post.topAdEnabled,
@@ -102,6 +107,7 @@ export default function PostEditor({
     const payload = {
       listId,
       title: form.title,
+      category: form.category || null,
       publishDate: new Date(form.publishDate).toISOString(),
       content: form.content,
       topAdEnabled: form.topAdEnabled,
@@ -139,6 +145,38 @@ export default function PostEditor({
       <div className="adm-card">
         <label>Title (optional)</label>
         <input type="text" value={form.title} onChange={(e) => set("title", e.target.value)} />
+
+        <label>Category (internal only)</label>
+        {listCategories.length > 0 ? (
+          <select
+            value={form.category}
+            onChange={(e) => set("category", e.target.value)}
+            style={{
+              width: "100%",
+              border: "1px solid var(--line)",
+              borderRadius: 8,
+              padding: "9px 11px",
+              font: "inherit",
+              background: "#fff",
+              color: "var(--ink)",
+            }}
+          >
+            <option value="">— None —</option>
+            {listCategories.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <div className="hint">
+            No post categories defined for this list yet. Add them in the list’s
+            settings to tag posts.
+          </div>
+        )}
+        <div className="hint">
+          For internal organization only — never shown on the public page.
+        </div>
 
         <label>Publish date</label>
         <input

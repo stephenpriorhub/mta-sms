@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getHubUser, isHubAdmin, forbidden } from "@/lib/hub-auth";
+import { resolvePostCategory } from "@/lib/categories";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,16 @@ export async function PUT(
 
   const data: Record<string, unknown> = {};
   if ("title" in body) data.title = body.title || null;
+  if ("category" in body) {
+    const existing = await prisma.post.findUnique({
+      where: { id },
+      select: { list: { select: { postCategories: true } } },
+    });
+    data.category = resolvePostCategory(
+      body.category,
+      existing?.list.postCategories ?? []
+    );
+  }
   if ("publishDate" in body && body.publishDate)
     data.publishDate = new Date(body.publishDate);
   if ("content" in body) data.content = body.content || "";

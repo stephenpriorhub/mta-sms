@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { normalizeSlug, isValidSlug, randomSlug } from "@/lib/slug";
 import { publicListUrl } from "@/lib/site";
+import PostCategoryManager from "@/components/admin/PostCategoryManager";
 
 interface ListRow {
   id: string;
@@ -31,6 +32,7 @@ export default function AdminHome() {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [category, setCategory] = useState("");
+  const [postCategories, setPostCategories] = useState<string[]>([]);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [archivesEnabled, setArchivesEnabled] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -64,6 +66,7 @@ export default function AdminHome() {
     setName("");
     setSlug("");
     setCategory("");
+    setPostCategories([]);
     setLogoUrl(null);
     setArchivesEnabled(false);
     setErr("");
@@ -84,6 +87,7 @@ export default function AdminHome() {
         name,
         slug,
         category: category || null,
+        postCategories,
         logoUrl,
         archivesEnabled,
       }),
@@ -199,7 +203,7 @@ export default function AdminHome() {
               )}
             </div>
 
-            <label>Category (internal only)</label>
+            <label>List Category (groups your T-Lists · internal only)</label>
             <input
               type="text"
               value={category}
@@ -207,7 +211,17 @@ export default function AdminHome() {
               placeholder="e.g. War Room, Free lists…"
             />
             <div className="hint">
-              For your organization only — never shown on any public page.
+              Categorizes THIS list on the admin home. Never shown publicly.
+            </div>
+
+            <label>Post Categories (tag posts in this list · internal only)</label>
+            <PostCategoryManager
+              value={postCategories}
+              onChange={setPostCategories}
+            />
+            <div className="hint">
+              The set of categories you can tag posts with (e.g. “Ticker Tuesday”).
+              Per-list and never shown publicly.
             </div>
 
             <label>Logo (optional)</label>

@@ -5,10 +5,12 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { normalizeSlug, isValidSlug, randomSlug } from "@/lib/slug";
 import { publicListUrl, publicPostUrl } from "@/lib/site";
+import PostCategoryManager from "@/components/admin/PostCategoryManager";
 
 interface Post {
   id: string;
   title: string | null;
+  category: string | null;
   publishDate: string;
 }
 interface ListData {
@@ -17,6 +19,7 @@ interface ListData {
   slug: string;
   logoUrl: string | null;
   category: string | null;
+  postCategories: string[];
   archivesEnabled: boolean;
   posts: Post[];
 }
@@ -38,6 +41,7 @@ export default function ManageList() {
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
   const [saving, setSaving] = useState(false);
+  const [postFilter, setPostFilter] = useState<string>(""); // "" = all
 
   const load = useCallback(async () => {
     const [l, a] = await Promise.all([
@@ -170,7 +174,7 @@ export default function ManageList() {
           </div>
         )}
 
-        <label>Category (internal only)</label>
+        <label>List Category (groups your T-Lists · internal only)</label>
         <input
           type="text"
           value={list.category ?? ""}
@@ -178,7 +182,17 @@ export default function ManageList() {
           placeholder="e.g. War Room, Free lists…"
         />
         <div className="hint">
-          For your organization only — never shown on any public page.
+          Categorizes THIS list on the admin home. Never shown publicly.
+        </div>
+
+        <label>Post Categories (tag posts in this list · internal only)</label>
+        <PostCategoryManager
+          value={list.postCategories ?? []}
+          onChange={(next) => set("postCategories", next)}
+        />
+        <div className="hint">
+          The set of categories you can tag posts in this list with (e.g. “Ticker
+          Tuesday”). Per-list and never shown publicly.
         </div>
 
         <div className="checkline">
@@ -204,10 +218,39 @@ export default function ManageList() {
       </div>
 
       <h2>Posts</h2>
-      <div className="adm-actions" style={{ marginTop: 0, marginBottom: 12 }}>
+      <div
+        className="adm-actions"
+        style={{ marginTop: 0, marginBottom: 12, alignItems: "center" }}
+      >
         <Link className="adm-btn" href={`/admin/lists/${id}/posts/new`}>
           + New post
         </Link>
+        {list.postCategories.length > 0 && (
+          <label style={{ margin: 0, display: "flex", gap: 8, alignItems: "center" }}>
+            <span className="hint" style={{ margin: 0 }}>
+              Filter by category
+            </span>
+            <select
+              value={postFilter}
+              onChange={(e) => setPostFilter(e.target.value)}
+              style={{
+                border: "1px solid var(--line)",
+                borderRadius: 8,
+                padding: "7px 10px",
+                font: "inherit",
+                background: "#fff",
+              }}
+            >
+              <option value="">All</option>
+              {list.postCategories.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+              <option value="__none">Uncategorized</option>
+            </select>
+          </label>
+        )}
       </div>
       {list.posts.length === 0 ? (
         <p className="muted">No posts yet.</p>
@@ -216,6 +259,7 @@ export default function ManageList() {
           <thead>
             <tr>
               <th>Title</th>
+              <th>Category</th>
               <th>Publish date</th>
               <th>Views</th>
               <th>Clicks</th>
@@ -224,7 +268,15 @@ export default function ManageList() {
             </tr>
           </thead>
           <tbody>
-            {list.posts.map((p) => {
+            {list.posts
+              .filter((p) =>
+                postFilter === ""
+                  ? true
+                  : postFilter === "__none"
+                  ? !p.category
+                  : p.category === postFilter
+              )
+              .map((p) => {
               const scheduled = new Date(p.publishDate).getTime() > Date.now();
               const stats = clicksFor(p.id);
               return (
@@ -232,6 +284,13 @@ export default function ManageList() {
                   <td>
                     {p.title || "Untitled"}{" "}
                     {scheduled && <span className="adm-badge warn">Scheduled</span>}
+                  </td>
+                  <td>
+                    {p.category ? (
+                      <span className="adm-badge cat">{p.category}</span>
+                    ) : (
+                      <span className="muted">—</span>
+                    )}
                   </td>
                   <td>{new Date(p.publishDate).toLocaleDateString()}</td>
                   <td>{stats?.views ?? 0}</td>

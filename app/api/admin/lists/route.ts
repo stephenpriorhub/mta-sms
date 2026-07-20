@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getHubUser, isHubAdmin, forbidden } from "@/lib/hub-auth";
 import { normalizeSlug, isValidSlug } from "@/lib/slug";
+import { sanitizePostCategories } from "@/lib/categories";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +38,7 @@ export async function POST(req: NextRequest) {
       slug,
       logoUrl: body.logoUrl || null,
       category: body.category || null,
+      postCategories: sanitizePostCategories(body.postCategories),
       archivesEnabled: !!body.archivesEnabled,
     },
   });

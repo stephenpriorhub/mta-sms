@@ -14,6 +14,7 @@ async function main() {
       name: "Trade of the Day",
       slug: DEMO_SLUG,
       category: "Demo",
+      postCategories: ["Ticker Tuesday", "Market Recap"],
       archivesEnabled: true,
     },
   });
@@ -24,6 +25,7 @@ async function main() {
       data: {
         listId: list.id,
         title: "Why This Setup Has My Full Attention",
+        category: "Ticker Tuesday",
         topAdEnabled: true,
         topAdText:
           "Sponsored: See the full War Room briefing — this week's highest-conviction setups.\nLimited seats for new members.",

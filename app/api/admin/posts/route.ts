@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getHubUser, isHubAdmin, forbidden } from "@/lib/hub-auth";
+import { resolvePostCategory } from "@/lib/categories";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,7 @@ export async function POST(req: NextRequest) {
     data: {
       listId: body.listId,
       title: body.title || null,
+      category: resolvePostCategory(body.category, list.postCategories),
       publishDate: body.publishDate ? new Date(body.publishDate) : new Date(),
       content: body.content || "",
       topAdEnabled: !!body.topAdEnabled,

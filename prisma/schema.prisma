@@ -15,8 +15,13 @@ model List {
   name            String
   slug            String   @unique
   logoUrl         String? // falls back to the MTA cream logo when null
-  // Internal-only organizing category. NEVER rendered on any public page.
+  // Internal-only category for the LIST itself (groups T-Lists on the admin home).
+  // NEVER rendered on any public page.
   category        String?
+  // Internal-only, per-list SET of post-category names the publisher manages
+  // (e.g. "Ticker Tuesday", "Market Recap"). Each post may be tagged with one.
+  // NEVER rendered on any public page.
+  postCategories  String[] @default([])
   // "View Archives" accordion at the bottom of the public page.
   archivesEnabled Boolean  @default(false)
   createdAt       DateTime @default(now())
@@ -36,6 +41,9 @@ model Post {
   listId          String
   title           String?
   publishDate     DateTime @default(now())
+  // Internal-only post category (one of the parent List's postCategories).
+  // NEVER rendered on any public page.
+  category        String?
   content         String   @db.Text // sanitized HTML (links + inline images)
   // Top text-ad box (2-line light-grey link) rendered at the very top of THIS post.
   topAdEnabled    Boolean  @default(false)
