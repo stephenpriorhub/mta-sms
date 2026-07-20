@@ -1,66 +1,21 @@
-// Idempotent demo seed so a fresh deploy is immediately viewable.
-// Run: `node scripts/seed.mjs` (uses DATABASE_URL). Safe to re-run — upserts on slug.
+// Seed script — intentionally a NO-OP.
+//
+// The old demo "trade" list was removed permanently (it collided with real
+// content and kept reappearing). This script no longer creates any list, so
+// re-running it can never resurrect the demo. Real lists are created through
+// the admin UI.
+//
+// If a future task needs throwaway sample content, create it under a unique,
+// clearly-temporary slug that cannot collide with a real list — and delete it
+// again afterwards. NEVER use 'trade' or any plausible real slug.
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-const DEMO_SLUG = "trade"; // exactly 5 chars, valid
-
 async function main() {
-  const list = await prisma.list.upsert({
-    where: { slug: DEMO_SLUG },
-    update: {},
-    create: {
-      name: "Trade of the Day",
-      slug: DEMO_SLUG,
-      category: "Demo",
-      postCategories: ["Ticker Tuesday", "Market Recap"],
-      archivesEnabled: true,
-    },
-  });
-
-  const count = await prisma.post.count({ where: { listId: list.id } });
-  if (count === 0) {
-    await prisma.post.create({
-      data: {
-        listId: list.id,
-        title: "Why This Setup Has My Full Attention",
-        category: "Ticker Tuesday",
-        topAdEnabled: true,
-        topAdText:
-          "Sponsored: See the full War Room briefing — this week's highest-conviction setups.\nLimited seats for new members.",
-        topAdLink: "https://monumenttradersalliance.com",
-        content:
-          "<p>Good morning. The market handed us a rare signal overnight, and I want to walk you through exactly what I'm seeing before the open.</p>" +
-          "<p>Volatility compressed to a multi-week low while volume quietly built underneath. That combination has preceded some of the sharpest moves we've traded this year.</p>" +
-          '<p>Here is the key level I\'m watching, and <a href="https://monumenttradersalliance.com">the full breakdown is here</a>.</p>' +
-          "<table><thead><tr><th>Ticker</th><th>Entry</th><th>Stop</th><th>Target</th></tr></thead>" +
-          "<tbody><tr><td>NVO</td><td>$52.00</td><td>$47.50</td><td>$61.00</td></tr>" +
-          "<tr><td>Trend</td><td>Bullish</td><td>2–6 wks</td><td>Swing</td></tr></tbody></table>" +
-          "<p>Manage your risk, size sensibly, and let the setup come to you.</p>",
-        actionToTake:
-          "Consider buying shares of Novo Nordisk (NVO) up to $52.00, with a stop at $47.50 and a target near $61.",
-        actionSecondary:
-          "Past performance is not indicative of future results. This is a swing position — plan to hold 2 to 6 weeks and size sensibly.",
-        buttonText: "See the Full Briefing",
-        buttonUrl: "https://monumenttradersalliance.com",
-      },
-    });
-    // A second, older post so the archives accordion has content.
-    const older = new Date();
-    older.setDate(older.getDate() - 7);
-    await prisma.post.create({
-      data: {
-        listId: list.id,
-        title: "Last Week's Recap",
-        publishDate: older,
-        content:
-          "<p>A quick look back at how last week's ideas played out and what carried over into this week.</p>",
-      },
-    });
-  }
-
-  console.log(`Seed complete. Public page: /${DEMO_SLUG}`);
+  console.log(
+    "Seed is a no-op: no demo content is created. Manage lists in the admin UI."
+  );
 }
 
 main()
