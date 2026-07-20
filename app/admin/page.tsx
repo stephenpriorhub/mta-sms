@@ -89,14 +89,17 @@ export default function AdminHome() {
 
   return (
     <>
-      {/* PRIMARY ACTION: the full create-post form, inline at the very top. */}
-      <PostEditor lists={lists} onCreated={load} />
-
-      <div className="adm-actions" style={{ marginTop: 22 }}>
-        <a className="adm-btn secondary" href="#your-tlists">
-          ↓ Jump to your T-Lists
-        </a>
-      </div>
+      {/* PRIMARY ACTION: the full create-post form, inline at the very top.
+          The "Jump to your T-Lists" button sits on the same row as the heading. */}
+      <PostEditor
+        lists={lists}
+        onCreated={load}
+        headerAction={
+          <a className="adm-btn secondary" href="#your-tlists">
+            ↓ Jump to your T-Lists
+          </a>
+        }
+      />
 
       {/* ADD A T-LIST */}
       <h2>Add a T-List</h2>

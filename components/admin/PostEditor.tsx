@@ -65,6 +65,7 @@ export default function PostEditor({
   postId,
   lists,
   onCreated,
+  headerAction,
 }: {
   // Per-list mode: listId fixed. Home mode: omit listId and pass `lists` so the
   // publisher first picks which T-Letter to post into.
@@ -72,6 +73,7 @@ export default function PostEditor({
   postId?: string;
   lists?: ListOption[];
   onCreated?: () => void;
+  headerAction?: React.ReactNode;
 }) {
   const router = useRouter();
   const homeMode = !!lists;
@@ -199,7 +201,10 @@ export default function PostEditor({
   return (
     <>
       {homeMode ? (
-        <h1>New Post</h1>
+        <div className="adm-hd-row">
+          <h1>New Post</h1>
+          {headerAction}
+        </div>
       ) : (
         <>
           <p className="muted">

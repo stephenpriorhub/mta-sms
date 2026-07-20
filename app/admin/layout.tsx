@@ -20,7 +20,7 @@ export default function AdminLayout({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="adm-brand-logo" src="/logo-cream.png" alt="MTA T-Letter Sites" />
         </Link>
-        <span className="adm-sub">Admin</span>
+        <span className="adm-sub">T-Letter Admin</span>
       </div>
       <div className="adm-main">{children}</div>
 
