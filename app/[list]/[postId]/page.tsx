@@ -7,10 +7,11 @@ import { SITE_URL, publicPostUrl } from "@/lib/site";
 export const revalidate = 60;
 
 async function load(slug: string, postId: string) {
-  const list = await prisma.list.findUnique({ where: { slug } });
+  // A soft-deleted list or post must 404 publicly (deletedAt: null on both).
+  const list = await prisma.list.findFirst({ where: { slug, deletedAt: null } });
   if (!list) return null;
   const post = await prisma.post.findFirst({
-    where: { id: postId, listId: list.id },
+    where: { id: postId, listId: list.id, deletedAt: null },
   });
   return post ? { list, post } : null;
 }
@@ -54,6 +55,7 @@ export default async function PostPage({
     ? await prisma.post.findMany({
         where: {
           listId: list.id,
+          deletedAt: null,
           publishDate: { lte: new Date() },
           id: { not: post.id },
         },

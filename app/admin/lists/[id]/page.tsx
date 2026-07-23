@@ -89,13 +89,18 @@ export default function ManageList() {
   }
 
   async function delPost(postId: string) {
-    if (!confirm("Delete this post?")) return;
+    if (!confirm("Move this post to the Recycle Bin? You can restore it later."))
+      return;
     await fetch(`/api/admin/posts/${postId}`, { method: "DELETE" });
     load();
   }
 
   async function delList() {
-    if (!confirm("Delete this ENTIRE list and all its posts? This cannot be undone."))
+    if (
+      !confirm(
+        "Move this ENTIRE list (and its posts) to the Recycle Bin? You can restore it later from the bin."
+      )
+    )
       return;
     const res = await fetch(`/api/admin/lists/${id}`, { method: "DELETE" });
     if (res.ok) router.push("/admin");

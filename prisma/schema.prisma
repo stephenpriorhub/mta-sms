@@ -21,6 +21,11 @@ model List {
   postCategories  String[] @default([])
   // "View Archives" accordion at the bottom of the public page.
   archivesEnabled Boolean  @default(false)
+  // Soft-delete: null => active. A non-null value hides the list (and therefore
+  // its posts) from the public site and normal admin, but keeps the row (and its
+  // posts) recoverable from the Recycle Bin. A hard delete happens only when the
+  // list is permanently purged from the bin.
+  deletedAt       DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -29,6 +34,7 @@ model List {
   linkClicks LinkClick[]
 
   @@index([slug])
+  @@index([deletedAt])
 }
 
 // A post belongs to exactly one list. Publish date in the future => scheduled and
@@ -52,6 +58,11 @@ model Post {
   // Optional button: rendered only if BOTH fields are present.
   buttonText      String?
   buttonUrl       String?
+  // Soft-delete: null => active. A non-null value hides the post from the public
+  // site (its own URL 404s, it drops out of archives and the latest-post slot)
+  // and from normal admin, but keeps it recoverable from the Recycle Bin. A hard
+  // delete happens only when the post is permanently purged from the bin.
+  deletedAt       DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -60,6 +71,7 @@ model Post {
   linkClicks LinkClick[]
 
   @@index([listId, publishDate])
+  @@index([deletedAt])
 }
 
 // First-party page view (recorded via a tracking pixel). postId null => list index view.

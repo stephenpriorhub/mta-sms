@@ -11,7 +11,9 @@ export async function POST(req: NextRequest) {
   if (!body?.listId) {
     return NextResponse.json({ error: "listId is required" }, { status: 400 });
   }
-  const list = await prisma.list.findUnique({ where: { id: body.listId } });
+  const list = await prisma.list.findFirst({
+    where: { id: body.listId, deletedAt: null },
+  });
   if (!list) {
     return NextResponse.json({ error: "list not found" }, { status: 404 });
   }

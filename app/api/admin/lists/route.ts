@@ -9,8 +9,14 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   if (!isHubAdmin(await getHubUser(req))) return forbidden();
   const lists = await prisma.list.findMany({
+    where: { deletedAt: null },
     orderBy: { createdAt: "desc" },
-    include: { _count: { select: { posts: true, pageViews: true } } },
+    include: {
+      _count: {
+        // Post count must exclude soft-deleted posts (they live in the bin).
+        select: { posts: { where: { deletedAt: null } }, pageViews: true },
+      },
+    },
   });
   return NextResponse.json({ lists });
 }

@@ -15,7 +15,8 @@ export async function GET(
   const list = await prisma.list.findUnique({
     where: { id },
     include: {
-      posts: { orderBy: { publishDate: "desc" } },
+      // Exclude soft-deleted posts from the manage view — they live in the bin.
+      posts: { where: { deletedAt: null }, orderBy: { publishDate: "desc" } },
     },
   });
   if (!list) return NextResponse.json({ error: "not found" }, { status: 404 });
@@ -57,12 +58,18 @@ export async function PUT(
   return NextResponse.json({ list });
 }
 
+// SOFT-DELETE only. Moves the list to the Recycle Bin (sets deletedAt). This is
+// the most destructive action (a hard delete would cascade to every post), so we
+// deliberately do NOT touch the posts here: they stay as-is and are hidden simply
+// because their parent list is hidden. On restore, the list's posts reappear
+// (except any individually soft-deleted). A real hard delete (cascading to posts)
+// happens ONLY via the trash purge endpoint (app/api/admin/trash/lists/[id] DELETE).
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   if (!isHubAdmin(await getHubUser(req))) return forbidden();
   const { id } = await params;
-  await prisma.list.delete({ where: { id } });
+  await prisma.list.update({ where: { id }, data: { deletedAt: new Date() } });
   return NextResponse.json({ ok: true });
 }

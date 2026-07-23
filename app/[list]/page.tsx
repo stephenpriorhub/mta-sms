@@ -8,7 +8,8 @@ import { SITE_URL, publicListUrl } from "@/lib/site";
 export const revalidate = 60;
 
 async function getList(slug: string) {
-  return prisma.list.findUnique({ where: { slug } });
+  // A soft-deleted list's slug must 404 publicly (deletedAt: null).
+  return prisma.list.findFirst({ where: { slug, deletedAt: null } });
 }
 
 export async function generateMetadata({
@@ -39,7 +40,7 @@ export default async function ListPage({
 
   const now = new Date();
   const latest = await prisma.post.findFirst({
-    where: { listId: list.id, publishDate: { lte: now } },
+    where: { listId: list.id, deletedAt: null, publishDate: { lte: now } },
     orderBy: { publishDate: "desc" },
   });
 
@@ -81,6 +82,7 @@ export default async function ListPage({
     ? await prisma.post.findMany({
         where: {
           listId: list.id,
+          deletedAt: null,
           publishDate: { lte: now },
           id: { not: latest.id },
         },

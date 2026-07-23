@@ -53,12 +53,15 @@ export async function PUT(
   return NextResponse.json({ post });
 }
 
+// SOFT-DELETE only. Moves the post to the Recycle Bin (sets deletedAt) — the row
+// is kept and stays recoverable. A real hard delete happens ONLY via the trash
+// purge endpoint (app/api/admin/trash/posts/[id] DELETE).
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   if (!isHubAdmin(await getHubUser(req))) return forbidden();
   const { id } = await params;
-  await prisma.post.delete({ where: { id } });
+  await prisma.post.update({ where: { id }, data: { deletedAt: new Date() } });
   return NextResponse.json({ ok: true });
 }

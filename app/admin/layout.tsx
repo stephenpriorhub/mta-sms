@@ -21,6 +21,9 @@ export default function AdminLayout({
           <img className="adm-brand-logo" src="/logo-cream.png" alt="MTA T-Letter Sites" />
         </Link>
         <span className="adm-sub">T-Letter Admin</span>
+        <Link href="/admin/trash" className="adm-topbar-link">
+          Recycle Bin
+        </Link>
       </div>
       <div className="adm-main">{children}</div>
 

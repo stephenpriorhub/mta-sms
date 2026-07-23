@@ -13,12 +13,19 @@ export async function GET(req: NextRequest) {
   if (!listId) {
     // Per-list totals across all lists.
     const lists = await prisma.list.findMany({
+      where: { deletedAt: null },
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
         name: true,
         slug: true,
-        _count: { select: { posts: true, pageViews: true, linkClicks: true } },
+        _count: {
+          select: {
+            posts: { where: { deletedAt: null } },
+            pageViews: true,
+            linkClicks: true,
+          },
+        },
       },
     });
     return NextResponse.json({
@@ -41,7 +48,7 @@ export async function GET(req: NextRequest) {
       prisma.pageView.count({ where: { listId } }),
       prisma.linkClick.count({ where: { listId } }),
       prisma.post.findMany({
-        where: { listId },
+        where: { listId, deletedAt: null },
         orderBy: { publishDate: "desc" },
         select: { id: true, title: true, publishDate: true },
       }),
