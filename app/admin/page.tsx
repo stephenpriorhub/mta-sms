@@ -248,6 +248,13 @@ export default function AdminHome() {
           </tbody>
         </table>
       )}
+
+      {/* Footer-area link to the Recycle Bin (soft-deleted posts & lists). */}
+      <div className="adm-footer">
+        <Link href="/admin/trash" className="adm-btn secondary">
+          Recycle Bin
+        </Link>
+      </div>
     </>
   );
 }
