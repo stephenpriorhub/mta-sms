@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getHubUser, isHubAdmin, forbidden } from "@/lib/hub-auth";
+import { getHubUser, isAuthorizedHubUser, forbidden } from "@/lib/hub-auth";
 import { resolvePostCategory } from "@/lib/categories";
 
 export const dynamic = "force-dynamic";
@@ -9,7 +9,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!isHubAdmin(await getHubUser(req))) return forbidden();
+  if (!isAuthorizedHubUser(await getHubUser(req))) return forbidden();
   const { id } = await params;
   const post = await prisma.post.findUnique({ where: { id } });
   if (!post) return NextResponse.json({ error: "not found" }, { status: 404 });
@@ -20,7 +20,7 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!isHubAdmin(await getHubUser(req))) return forbidden();
+  if (!isAuthorizedHubUser(await getHubUser(req))) return forbidden();
   const { id } = await params;
   const body = await req.json().catch(() => null);
   if (!body) return NextResponse.json({ error: "bad body" }, { status: 400 });
@@ -60,7 +60,7 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!isHubAdmin(await getHubUser(req))) return forbidden();
+  if (!isAuthorizedHubUser(await getHubUser(req))) return forbidden();
   const { id } = await params;
   await prisma.post.update({ where: { id }, data: { deletedAt: new Date() } });
   return NextResponse.json({ ok: true });

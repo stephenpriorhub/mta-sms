@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getHubUser, isHubAdmin, forbidden } from "@/lib/hub-auth";
+import { getHubUser, isAuthorizedHubUser, forbidden } from "@/lib/hub-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +11,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!isHubAdmin(await getHubUser(req))) return forbidden();
+  if (!isAuthorizedHubUser(await getHubUser(req))) return forbidden();
   const { id } = await params;
   const existing = await prisma.post.findUnique({
     where: { id },
@@ -33,7 +33,7 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!isHubAdmin(await getHubUser(req))) return forbidden();
+  if (!isAuthorizedHubUser(await getHubUser(req))) return forbidden();
   const { id } = await params;
   await prisma.post.delete({ where: { id } });
   return NextResponse.json({ ok: true });

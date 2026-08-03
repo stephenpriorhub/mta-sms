@@ -62,6 +62,10 @@ export async function getHubUser(req: NextRequest): Promise<HubUser | null> {
   }
 }
 
+/**
+ * Admin-tier gate: only the elevated hub roles. Kept for any future surface
+ * that must be restricted to hub admins (not currently used by T-Letter admin).
+ */
 export function isHubAdmin(user: HubUser | null): boolean {
   return (
     !!user &&
@@ -71,8 +75,22 @@ export function isHubAdmin(user: HubUser | null): boolean {
   );
 }
 
+/**
+ * Authorization gate for the T-Letter admin. A non-null user here means the
+ * hub already returned authenticated && authorized for projectId `mta-sms`
+ * (see getHubUser) — i.e. the caller has a UserProject assignment to an active,
+ * non-restricted project. That assignment IS the access grant, so ANY resolved
+ * hub user (including role "user" — assigned members) may manage T-Letter
+ * sites. Do NOT re-narrow this to admin-tier roles: that contradicts the
+ * documented member-access design and 403s assigned members. Destructive
+ * actions stay safe because deletes are soft (recoverable in the Recycle Bin).
+ */
+export function isAuthorizedHubUser(user: HubUser | null): boolean {
+  return !!user;
+}
+
 export function forbidden(
-  message = "Sign in to OxfordHub with an admin account to manage T-Letter sites."
+  message = "Sign in to OxfordHub — you need an account assigned to this project to manage T-Letter sites."
 ): NextResponse {
   return NextResponse.json({ error: message }, { status: 403 });
 }

@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getHubUser, isHubAdmin, forbidden } from "@/lib/hub-auth";
+import { getHubUser, isAuthorizedHubUser, forbidden } from "@/lib/hub-auth";
 
 export const dynamic = "force-dynamic";
 
 // Analytics summary. Optional ?listId=<id> to scope to one list (with per-post
 // views and per-link click breakdown). Without it, returns per-list totals.
 export async function GET(req: NextRequest) {
-  if (!isHubAdmin(await getHubUser(req))) return forbidden();
+  if (!isAuthorizedHubUser(await getHubUser(req))) return forbidden();
   const listId = new URL(req.url).searchParams.get("listId");
 
   if (!listId) {

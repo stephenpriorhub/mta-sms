@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getHubUser, isHubAdmin, forbidden } from "@/lib/hub-auth";
+import { getHubUser, isAuthorizedHubUser, forbidden } from "@/lib/hub-auth";
 import { processImage } from "@/lib/image";
 
 export const dynamic = "force-dynamic";
@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 // Accepts multipart/form-data with a single `file`. Resizes/compresses to webp,
 // stores the bytes, and returns the public URL to embed.
 export async function POST(req: NextRequest) {
-  if (!isHubAdmin(await getHubUser(req))) return forbidden();
+  if (!isAuthorizedHubUser(await getHubUser(req))) return forbidden();
 
   const form = await req.formData().catch(() => null);
   const file = form?.get("file");

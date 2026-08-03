@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getHubUser, isHubAdmin, forbidden } from "@/lib/hub-auth";
+import { getHubUser, isAuthorizedHubUser, forbidden } from "@/lib/hub-auth";
 
 export const dynamic = "force-dynamic";
 
 // Recycle Bin contents: everything currently soft-deleted (deletedAt != null),
 // most-recently-deleted first. Powers the /admin/trash page.
 export async function GET(req: NextRequest) {
-  if (!isHubAdmin(await getHubUser(req))) return forbidden();
+  if (!isAuthorizedHubUser(await getHubUser(req))) return forbidden();
 
   const [posts, lists] = await Promise.all([
     // Individually soft-deleted posts, with their parent list's name/slug so the

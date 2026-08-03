@@ -19,6 +19,7 @@ interface ListRow {
 export default function AdminHome() {
   const [lists, setLists] = useState<ListRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadErr, setLoadErr] = useState("");
 
   // Add a T-List (inline form)
   const [showCreate, setShowCreate] = useState(false);
@@ -32,8 +33,23 @@ export default function AdminHome() {
 
   async function load() {
     setLoading(true);
-    const res = await fetch("/api/admin/lists");
-    if (res.ok) setLists((await res.json()).lists);
+    setLoadErr("");
+    try {
+      const res = await fetch("/api/admin/lists");
+      if (res.ok) {
+        setLists((await res.json()).lists);
+      } else {
+        const detail = await res.json().catch(() => null);
+        setLoadErr(
+          detail?.error ||
+            (res.status === 403
+              ? "Couldn't load your T-Lists — your OxfordHub account may not be assigned to this project."
+              : `Couldn't load your T-Lists (error ${res.status}).`)
+        );
+      }
+    } catch {
+      setLoadErr("Couldn't load your T-Lists — network error. Please retry.");
+    }
     setLoading(false);
   }
   useEffect(() => {
@@ -93,6 +109,7 @@ export default function AdminHome() {
           The "Jump to your T-Lists" button sits on the same row as the heading. */}
       <PostEditor
         lists={lists}
+        listsError={loadErr}
         onCreated={load}
         headerAction={
           <a className="adm-btn secondary" href="#your-tlists">
@@ -212,6 +229,17 @@ export default function AdminHome() {
       </h2>
       {loading ? (
         <p className="muted">Loading…</p>
+      ) : loadErr ? (
+        <div className="adm-err">
+          {loadErr}{" "}
+          <button
+            className="adm-btn secondary"
+            onClick={load}
+            style={{ marginLeft: 8 }}
+          >
+            Retry
+          </button>
+        </div>
       ) : lists.length === 0 ? (
         <p className="muted">No lists yet.</p>
       ) : (

@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getHubUser, isHubAdmin, forbidden } from "@/lib/hub-auth";
+import { getHubUser, isAuthorizedHubUser, forbidden } from "@/lib/hub-auth";
 import { normalizeSlug, isValidSlug } from "@/lib/slug";
 import { sanitizePostCategories } from "@/lib/categories";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  if (!isHubAdmin(await getHubUser(req))) return forbidden();
+  if (!isAuthorizedHubUser(await getHubUser(req))) return forbidden();
   const lists = await prisma.list.findMany({
     where: { deletedAt: null },
     orderBy: { createdAt: "desc" },
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!isHubAdmin(await getHubUser(req))) return forbidden();
+  if (!isAuthorizedHubUser(await getHubUser(req))) return forbidden();
   const body = await req.json().catch(() => null);
   if (!body?.name) {
     return NextResponse.json({ error: "name is required" }, { status: 400 });

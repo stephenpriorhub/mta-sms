@@ -64,6 +64,7 @@ export default function PostEditor({
   listId,
   postId,
   lists,
+  listsError,
   onCreated,
   headerAction,
 }: {
@@ -72,6 +73,9 @@ export default function PostEditor({
   listId?: string;
   postId?: string;
   lists?: ListOption[];
+  // Home mode: error from loading the T-Letter list, so an empty dropdown is
+  // never silently mistaken for "no lists exist."
+  listsError?: string;
   onCreated?: () => void;
   headerAction?: React.ReactNode;
 }) {
@@ -235,6 +239,7 @@ export default function PostEditor({
               Determines where the post is created and which post categories are
               available.
             </div>
+            {listsError && <div className="adm-err">{listsError}</div>}
           </>
         )}
 
