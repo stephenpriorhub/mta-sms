@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getHubUser, isAuthorizedHubUser, forbidden } from "@/lib/hub-auth";
 import { resolvePostCategory } from "@/lib/categories";
+import { syncEditorialToMtarix } from "@/lib/mtarix";
 
 export const dynamic = "force-dynamic";
 
@@ -49,7 +50,16 @@ export async function PUT(
   if ("buttonText" in body) data.buttonText = body.buttonText || null;
   if ("buttonUrl" in body) data.buttonUrl = body.buttonUrl || null;
 
-  const post = await prisma.post.update({ where: { id }, data });
+  const post = await prisma.post.update({
+    where: { id },
+    data,
+    include: { list: { select: { name: true, slug: true } } },
+  });
+
+  // Re-publishing / edits push the latest state to MTARIX (idempotent by
+  // sourceId). Fail-soft, off the response path.
+  after(() => syncEditorialToMtarix(post, post.list));
+
   return NextResponse.json({ post });
 }
 

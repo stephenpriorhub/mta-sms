@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getHubUser, isAuthorizedHubUser, forbidden } from "@/lib/hub-auth";
 import { resolvePostCategory } from "@/lib/categories";
+import { syncEditorialToMtarix } from "@/lib/mtarix";
 
 export const dynamic = "force-dynamic";
 
@@ -33,5 +34,9 @@ export async function POST(req: NextRequest) {
       buttonUrl: body.buttonUrl || null,
     },
   });
+
+  // Fire-and-forget MTARIX editorial sync (fail-soft, off the response path).
+  after(() => syncEditorialToMtarix(post, list));
+
   return NextResponse.json({ post }, { status: 201 });
 }
