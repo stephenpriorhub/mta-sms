@@ -23,8 +23,16 @@ const CODE_BY_LIST_NAME: Record<string, string> = {
   "trade of the day wake up watchlist": "TDWATCH",
 };
 
+// Normalize a list name for mapping lookup. Any run of non-alphanumeric
+// characters (whitespace, hyphens, punctuation) collapses to a single space so
+// cosmetic differences don't break the code match — e.g. "Wake-Up" and "Wake Up"
+// both normalize to "wake up". (The live list is "Trade of the Day Wake-Up
+// Watchlist"; without hyphen-folding it would look unmapped and never sync.)
 function normalizeName(name: string): string {
-  return name.toLowerCase().replace(/\s+/g, " ").trim();
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
 }
 
 /** Resolve the MTARIX editorial code for a list, or null when unmapped. */
