@@ -23,11 +23,12 @@ interface ListData {
   posts: Post[];
 }
 interface Analytics {
-  totals: { views: number; clicks: number };
+  totals: { views: number; uniqueViews: number; clicks: number };
   posts: {
     id: string;
     title: string | null;
     views: number;
+    uniqueViews: number;
     links: { url: string; label: string | null; clicks: number }[];
   }[];
 }
@@ -255,6 +256,7 @@ export default function ManageList() {
               <th>Category</th>
               <th>Publish date</th>
               <th>Views</th>
+              <th>Unique</th>
               <th>Clicks</th>
               <th></th>
               <th></th>
@@ -287,6 +289,7 @@ export default function ManageList() {
                   </td>
                   <td>{new Date(p.publishDate).toLocaleDateString()}</td>
                   <td>{stats?.views ?? 0}</td>
+                  <td>{stats?.uniqueViews ?? 0}</td>
                   <td>{stats?.links.reduce((s, l) => s + l.clicks, 0) ?? 0}</td>
                   <td>
                     <a
@@ -318,6 +321,10 @@ export default function ManageList() {
           <strong>{analytics?.totals.views ?? 0}</strong>
         </div>
         <div className="adm-row" style={{ marginTop: 8 }}>
+          <span className="muted">Unique page views</span>
+          <strong>{analytics?.totals.uniqueViews ?? 0}</strong>
+        </div>
+        <div className="adm-row" style={{ marginTop: 8 }}>
           <span className="muted">Total link clicks</span>
           <strong>{analytics?.totals.clicks ?? 0}</strong>
         </div>
@@ -326,7 +333,8 @@ export default function ManageList() {
         (p) =>
           p.links.length > 0 && (
             <div className="adm-card" key={p.id}>
-              <strong>{p.title || "Untitled"}</strong> — {p.views} views
+              <strong>{p.title || "Untitled"}</strong> — {p.views} views ·{" "}
+              {p.uniqueViews} unique
               <table className="adm-table" style={{ marginTop: 10 }}>
                 <thead>
                   <tr>

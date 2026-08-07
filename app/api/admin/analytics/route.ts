@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getHubUser, isAuthorizedHubUser, forbidden } from "@/lib/hub-auth";
+import {
+  uniqueViewsByList,
+  uniqueViewsForList,
+  uniqueViewsByPost,
+} from "@/lib/analytics";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +33,7 @@ export async function GET(req: NextRequest) {
         },
       },
     });
+    const uniqueByList = await uniqueViewsByList();
     return NextResponse.json({
       lists: lists.map((l) => ({
         id: l.id,
@@ -35,6 +41,7 @@ export async function GET(req: NextRequest) {
         slug: l.slug,
         posts: l._count.posts,
         views: l._count.pageViews,
+        uniqueViews: uniqueByList.get(l.id) ?? 0,
         clicks: l._count.linkClicks,
       })),
     });
@@ -43,26 +50,35 @@ export async function GET(req: NextRequest) {
   const list = await prisma.list.findUnique({ where: { id: listId } });
   if (!list) return NextResponse.json({ error: "not found" }, { status: 404 });
 
-  const [totalViews, totalClicks, posts, viewsByPost, clicksByUrl] =
-    await Promise.all([
-      prisma.pageView.count({ where: { listId } }),
-      prisma.linkClick.count({ where: { listId } }),
-      prisma.post.findMany({
-        where: { listId, deletedAt: null },
-        orderBy: { publishDate: "desc" },
-        select: { id: true, title: true, publishDate: true },
-      }),
-      prisma.pageView.groupBy({
-        by: ["postId"],
-        where: { listId, postId: { not: null } },
-        _count: { _all: true },
-      }),
-      prisma.linkClick.groupBy({
-        by: ["postId", "url", "label"],
-        where: { listId },
-        _count: { _all: true },
-      }),
-    ]);
+  const [
+    totalViews,
+    totalUniqueViews,
+    totalClicks,
+    posts,
+    viewsByPost,
+    uniqueByPost,
+    clicksByUrl,
+  ] = await Promise.all([
+    prisma.pageView.count({ where: { listId } }),
+    uniqueViewsForList(listId),
+    prisma.linkClick.count({ where: { listId } }),
+    prisma.post.findMany({
+      where: { listId, deletedAt: null },
+      orderBy: { publishDate: "desc" },
+      select: { id: true, title: true, publishDate: true },
+    }),
+    prisma.pageView.groupBy({
+      by: ["postId"],
+      where: { listId, postId: { not: null } },
+      _count: { _all: true },
+    }),
+    uniqueViewsByPost(listId),
+    prisma.linkClick.groupBy({
+      by: ["postId", "url", "label"],
+      where: { listId },
+      _count: { _all: true },
+    }),
+  ]);
 
   const viewMap = new Map(
     viewsByPost.map((v) => [v.postId, v._count._all])
@@ -70,12 +86,17 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     list: { id: list.id, name: list.name, slug: list.slug },
-    totals: { views: totalViews, clicks: totalClicks },
+    totals: {
+      views: totalViews,
+      uniqueViews: totalUniqueViews,
+      clicks: totalClicks,
+    },
     posts: posts.map((p) => ({
       id: p.id,
       title: p.title,
       publishDate: p.publishDate,
       views: viewMap.get(p.id) ?? 0,
+      uniqueViews: uniqueByPost.get(p.id) ?? 0,
       links: clicksByUrl
         .filter((c) => c.postId === p.id)
         .map((c) => ({ url: c.url, label: c.label, clicks: c._count._all }))

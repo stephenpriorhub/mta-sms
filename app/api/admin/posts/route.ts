@@ -6,6 +6,15 @@ import { syncEditorialToMtarix } from "@/lib/mtarix";
 
 export const dynamic = "force-dynamic";
 
+// Normalize an optional single stock ticker: uppercase, trimmed, no spaces.
+// Empty/absent => null. Kept generous (letters, digits, dot/hyphen for symbols
+// like BRK.B) and capped so a stray paste can't bloat the field.
+function normalizeTicker(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const t = v.trim().toUpperCase().replace(/\s+/g, "").slice(0, 12);
+  return t || null;
+}
+
 export async function POST(req: NextRequest) {
   if (!isAuthorizedHubUser(await getHubUser(req))) return forbidden();
   const body = await req.json().catch(() => null);
@@ -24,6 +33,7 @@ export async function POST(req: NextRequest) {
       title: body.title || null,
       category: resolvePostCategory(body.category, list.postCategories),
       publishDate: body.publishDate ? new Date(body.publishDate) : new Date(),
+      ticker: normalizeTicker(body.ticker),
       content: body.content || "",
       topAdEnabled: !!body.topAdEnabled,
       topAdText: body.topAdText || null,

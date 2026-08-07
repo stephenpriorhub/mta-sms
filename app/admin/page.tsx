@@ -14,6 +14,7 @@ interface ListRow {
   logoUrl: string | null;
   archivesEnabled: boolean;
   _count: { posts: number; pageViews: number };
+  uniqueViews: number;
 }
 
 export default function AdminHome() {
@@ -250,6 +251,7 @@ export default function AdminHome() {
               <th>URL</th>
               <th>Posts</th>
               <th>Views</th>
+              <th>Unique</th>
               <th></th>
               <th></th>
             </tr>
@@ -265,6 +267,7 @@ export default function AdminHome() {
                 </td>
                 <td>{l._count.posts}</td>
                 <td>{l._count.pageViews}</td>
+                <td>{l.uniqueViews ?? 0}</td>
                 <td>
                   <Link href={`/admin/lists/${l.id}`}>Past posts</Link>
                 </td>

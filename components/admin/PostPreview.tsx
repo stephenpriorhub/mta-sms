@@ -10,6 +10,9 @@ import { CRITICAL_CSS } from "@/components/PublicPost";
 // emitted — this is a visual preview only.
 export interface PostPreviewValues {
   title: string;
+  // Ticker is an internal/data field only — carried in preview state but never
+  // rendered on the (public-matching) preview.
+  ticker?: string;
   publishDate: string; // datetime-local value
   content: string;
   topAdEnabled: boolean;

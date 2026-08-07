@@ -9,6 +9,7 @@ import RichTextEditor from "@/components/admin/RichTextEditor";
 interface PostForm {
   title: string;
   category: string;
+  ticker: string;
   publishDate: string; // datetime-local value
   content: string;
   topAdEnabled: boolean;
@@ -32,6 +33,7 @@ const empty = (): PostForm => {
   return {
     title: "",
     category: "",
+    ticker: "",
     publishDate: now.toISOString().slice(0, 16),
     content: "",
     topAdEnabled: false,
@@ -120,6 +122,7 @@ export default function PostEditor({
         setForm({
           title: post.title ?? "",
           category: post.category ?? "",
+          ticker: post.ticker ?? "",
           publishDate: toLocalInput(post.publishDate),
           content: post.content ?? "",
           topAdEnabled: !!post.topAdEnabled,
@@ -165,6 +168,7 @@ export default function PostEditor({
       listId: activeListId,
       title: form.title,
       category: form.category || null,
+      ticker: form.ticker || null,
       publishDate: new Date(form.publishDate).toISOString(),
       content: form.content,
       topAdEnabled: form.topAdEnabled,
@@ -245,6 +249,22 @@ export default function PostEditor({
 
         <label>Title (optional)</label>
         <input type="text" value={form.title} onChange={(e) => set("title", e.target.value)} />
+
+        <label>Ticker (optional)</label>
+        <input
+          type="text"
+          value={form.ticker}
+          onChange={(e) =>
+            set("ticker", e.target.value.toUpperCase().replace(/\s+/g, ""))
+          }
+          maxLength={12}
+          placeholder="e.g. NVO"
+          style={{ fontFamily: "monospace", letterSpacing: ".08em" }}
+        />
+        <div className="hint">
+          Single stock symbol for this post (internal/data field). Not shown on the
+          public page.
+        </div>
 
         <label>Category (internal only)</label>
         {activeListId && listCategories.length > 0 ? (

@@ -6,6 +6,13 @@ import { syncEditorialToMtarix } from "@/lib/mtarix";
 
 export const dynamic = "force-dynamic";
 
+// Normalize an optional single stock ticker: uppercase, trimmed, no spaces.
+function normalizeTicker(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const t = v.trim().toUpperCase().replace(/\s+/g, "").slice(0, 12);
+  return t || null;
+}
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -40,6 +47,7 @@ export async function PUT(
   }
   if ("publishDate" in body && body.publishDate)
     data.publishDate = new Date(body.publishDate);
+  if ("ticker" in body) data.ticker = normalizeTicker(body.ticker);
   if ("content" in body) data.content = body.content || "";
   if ("topAdEnabled" in body) data.topAdEnabled = !!body.topAdEnabled;
   if ("topAdText" in body) data.topAdText = body.topAdText || null;

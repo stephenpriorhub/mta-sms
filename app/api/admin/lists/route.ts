@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getHubUser, isAuthorizedHubUser, forbidden } from "@/lib/hub-auth";
 import { normalizeSlug, isValidSlug } from "@/lib/slug";
 import { sanitizePostCategories } from "@/lib/categories";
+import { uniqueViewsByList } from "@/lib/analytics";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,13 @@ export async function GET(req: NextRequest) {
       },
     },
   });
-  return NextResponse.json({ lists });
+  // Attach unique (distinct-visitor) view counts alongside the total pageViews.
+  const uniqueByList = await uniqueViewsByList();
+  const withUnique = lists.map((l) => ({
+    ...l,
+    uniqueViews: uniqueByList.get(l.id) ?? 0,
+  }));
+  return NextResponse.json({ lists: withUnique });
 }
 
 export async function POST(req: NextRequest) {
