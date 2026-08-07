@@ -6,12 +6,14 @@ import { syncEditorialToMtarix } from "@/lib/mtarix";
 
 export const dynamic = "force-dynamic";
 
-// Normalize an optional single stock ticker: uppercase, trimmed, no spaces.
-// Empty/absent => null. Kept generous (letters, digits, dot/hyphen for symbols
-// like BRK.B) and capped so a stray paste can't bloat the field.
+// Normalize an optional ticker string: ONE OR MULTIPLE symbols, stored raw as
+// entered (just uppercased + trimmed). MTARIX's "Tickers Recommended" field
+// parses this natively, splitting on comma/slash/space, so we keep the separators
+// intact (e.g. "NVDA" or "NVDA, AMD"). Empty/absent => null. Capped so a stray
+// paste can't bloat the field.
 function normalizeTicker(v: unknown): string | null {
   if (typeof v !== "string") return null;
-  const t = v.trim().toUpperCase().replace(/\s+/g, "").slice(0, 12);
+  const t = v.trim().toUpperCase().slice(0, 120);
   return t || null;
 }
 

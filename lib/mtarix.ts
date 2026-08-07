@@ -45,6 +45,9 @@ interface PostLike {
   title: string | null;
   publishDate: Date;
   deletedAt: Date | null;
+  // One or more stock symbols as entered (comma/slash/space separated). Sent
+  // as-is to MTARIX, which parses it into "Tickers Recommended".
+  ticker: string | null;
 }
 interface ListLike {
   name: string;
@@ -83,6 +86,8 @@ export async function syncEditorialToMtarix(
       publishDate,
       code,
       url: publicPostUrl(list.slug, post.id),
+      // Sent as-is; MTARIX parses into "Tickers Recommended". Null when unset.
+      tickers: post.ticker ?? null,
     };
 
     const controller = new AbortController();

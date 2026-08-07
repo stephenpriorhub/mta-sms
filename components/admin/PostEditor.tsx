@@ -250,20 +250,18 @@ export default function PostEditor({
         <label>Title (optional)</label>
         <input type="text" value={form.title} onChange={(e) => set("title", e.target.value)} />
 
-        <label>Ticker (optional)</label>
+        <label>Ticker(s) (optional)</label>
         <input
           type="text"
           value={form.ticker}
-          onChange={(e) =>
-            set("ticker", e.target.value.toUpperCase().replace(/\s+/g, ""))
-          }
-          maxLength={12}
-          placeholder="e.g. NVO"
+          onChange={(e) => set("ticker", e.target.value.toUpperCase())}
+          maxLength={120}
+          placeholder="e.g. NVDA or NVDA, AMD"
           style={{ fontFamily: "monospace", letterSpacing: ".08em" }}
         />
         <div className="hint">
-          Single stock symbol for this post (internal/data field). Not shown on the
-          public page.
+          One or more stock symbols, comma-separated (internal/data field). Not
+          shown on the public page.
         </div>
 
         <label>Category (internal only)</label>
