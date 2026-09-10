@@ -60,3 +60,21 @@ SSR/ISR (`revalidate = 60`), near-zero client JS on public pages (native
 `<details>` archives, `<img>` pixel, redirect links), inlined critical CSS,
 images auto-resized to webp (max edge 1000px) with immutable caching. Fast is a
 feature — traffic is strictly mobile.
+
+## MTARIX editorial sync (`lib/mtarix.ts`)
+Publishing a T-Letter creates/updates a matching **editorial issue** in MTARIX
+(`POST /api/editorial/from-tletter`, `x-hub-token`, idempotent by
+`sourceId = mta-sms:<postId>`). Lists map to a MTARIX code by *normalized name*
+— only `trade of the day wake up watchlist` → `TDWATCH` today; an unmapped list
+is skipped so nothing is ever mis-coded. The push is strictly fail-soft: a
+MTARIX outage can never block a publish.
+
+**The publish hook alone is not enough.** It runs from the admin post
+create/edit routes and bails with `not-published` when `publishDate` is still in
+the future, and nothing retries once that date arrives — so a post written ahead
+of time never reaches MTARIX. That silently starved MTARIX of TDWATCH issues
+from 2026-08-26 to 2026-09-10 (11 posts). The safety net is
+`.github/workflows/mtarix-tletter-sync.yml`, which re-pushes a rolling 14-day
+window through `POST /api/admin/mtarix-backfill?since=YYYY-MM-DD` at 05:00 and
+14:00 UTC. MTARIX no-ops an unchanged re-send, so sweeping costs nothing.
+Needs the repo secret `HUB_API_TOKEN` (matches the Railway var).
