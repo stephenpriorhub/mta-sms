@@ -1,0 +1,40 @@
+name: MTARIX T-Letter catch-up
+
+# The publish hook (lib/mtarix.ts, called from the admin post create/edit
+# routes) only fires while a post is ALREADY published. A post written ahead of
+# its publish date is skipped as "not-published" and nothing retries when the
+# date arrives — that silently starved MTARIX of TDWATCH issues from 2026-08-26
+# to 2026-09-10. This sweep re-pushes a rolling window of published posts;
+# MTARIX is idempotent by sourceId and treats an unchanged re-send as a no-op.
+#
+# 05:00 UTC (~1am ET) and 14:00 UTC (~10am ET) so a morning T-Letter lands the
+# same day rather than waiting for the next night.
+#
+# Setup: repo secret HUB_API_TOKEN must match the Railway HUB_API_TOKEN on the
+# mta-sms service. Optionally set the MTA_SMS_URL repo variable.
+on:
+  schedule:
+    - cron: "0 5 * * *"
+    - cron: "0 14 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Push published T-Letters to MTARIX
+        env:
+          HUB_API_TOKEN: ${{ secrets.HUB_API_TOKEN }}
+          MTA_SMS_URL: ${{ vars.MTA_SMS_URL || 'https://mta-sms.oxfordhub.app' }}
+        run: |
+          # 14 days of margin, so a multi-day outage still self-heals.
+          since=$(date -u -d '14 days ago' +%F)
+          echo "Sweeping T-Letters published since $since"
+          code=$(curl -sS -o /tmp/out.json -w "%{http_code}" \
+            -X POST "$MTA_SMS_URL/api/admin/mtarix-backfill?since=$since" \
+            -H "x-hub-token: $HUB_API_TOKEN")
+          echo "HTTP $code"
+          # Trim the per-post detail; the counts are what matter in the log.
+          python3 -c "import json;d=json.load(open('/tmp/out.json'));print({k:d[k] for k in ('since','found','synced','failed') if k in d})" || cat /tmp/out.json
+          test "$code" = "200"
+          python3 -c "import json,sys;d=json.load(open('/tmp/out.json'));sys.exit(1 if d.get('failed') else 0)"
