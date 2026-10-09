@@ -5,6 +5,7 @@ import {
   normalizeContentHtml,
   wrapTables,
 } from "@/lib/content";
+import { logoHeightOf, headerColorOf } from "@/lib/logo";
 
 // Minimal, mobile-first. Ships ZERO client JavaScript: the archives accordion is
 // a native <details>, page views use an <img> pixel, and link clicks go through
@@ -15,6 +16,8 @@ export interface PublicListData {
   name: string;
   slug: string;
   logoUrl: string | null;
+  logoHeight?: number | null;
+  headerColor?: string | null;
   archivesEnabled: boolean;
 }
 
@@ -53,7 +56,7 @@ function fmtDate(d: Date): string {
 export const CRITICAL_CSS = `
 .tl-header{background:var(--navy);padding:14px 18px;display:flex;justify-content:center;align-items:center}
 .tl-logo-link{display:inline-flex;align-items:center;text-decoration:none}
-.tl-logo-img{max-height:34px;width:auto;display:block}
+.tl-logo-img{max-height:34px;max-width:100%;width:auto;display:block}
 .tl-logo-text{color:var(--cream);font-weight:700;letter-spacing:.14em;font-size:13px;text-transform:uppercase}
 .tl-wrap{max-width:680px;margin:0 auto;padding:18px 16px 56px}
 .tl-topad{display:block;background:#f0f2f6;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:18px;font-size:13px;line-height:1.45;text-align:center}
@@ -123,7 +126,7 @@ export default function PublicPost({
     <>
       <style dangerouslySetInnerHTML={{ __html: CRITICAL_CSS }} />
 
-      <header className="tl-header">
+      <header className="tl-header" style={{ background: headerColorOf(list) }}>
         {/* Header logo always links out to the MTA site (default + custom logos). */}
         <a href={MTA_URL} target="_blank" rel="noopener" className="tl-logo-link">
           {/* Per-list logo overrides; default is the MTA cream wordmark. */}
@@ -132,6 +135,7 @@ export default function PublicPost({
             className="tl-logo-img"
             src={list.logoUrl || "/logo-cream.png"}
             alt={list.name}
+            style={{ maxHeight: logoHeightOf(list) }}
           />
         </a>
       </header>

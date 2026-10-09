@@ -6,6 +6,14 @@ import { useParams, useRouter } from "next/navigation";
 import { normalizeSlug, isValidSlug, randomSlug } from "@/lib/slug";
 import { publicListUrl, publicPostUrl } from "@/lib/site";
 import PostCategoryManager from "@/components/admin/PostCategoryManager";
+import {
+  DEFAULT_LOGO_HEIGHT,
+  MIN_LOGO_HEIGHT,
+  MAX_LOGO_HEIGHT,
+  logoHeightOf,
+  DEFAULT_HEADER_COLOR,
+  headerColorOf,
+} from "@/lib/logo";
 
 interface Post {
   id: string;
@@ -18,6 +26,8 @@ interface ListData {
   name: string;
   slug: string;
   logoUrl: string | null;
+  logoHeight: number | null;
+  headerColor: string | null;
   postCategories: string[];
   archivesEnabled: boolean;
   posts: Post[];
@@ -156,16 +166,59 @@ export default function ManageList() {
         </div>
 
         <label>Logo</label>
-        {list.logoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
+        {/* Preview mirrors the public header: navy bar, centered, same max height. */}
+        <div
+          style={{
+            background: headerColorOf(list),
+            padding: "14px 18px",
+            borderRadius: 6,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            marginBottom: 8,
+            maxWidth: 420,
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={list.logoUrl}
+            src={list.logoUrl || "/logo-cream.png"}
             alt="logo"
-            style={{ maxHeight: 40, background: "#0f2440", padding: 8, borderRadius: 6, display: "block", marginBottom: 8 }}
+            style={{ maxHeight: logoHeightOf(list), maxWidth: "100%", width: "auto", display: "block" }}
           />
-        ) : (
-          <div className="hint">Using default MTA cream logo.</div>
-        )}
+        </div>
+        {!list.logoUrl && <div className="hint">Using default MTA cream logo.</div>}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "6px 0 8px" }}>
+          <span className="hint" style={{ margin: 0 }}>Size</span>
+          <input
+            type="range"
+            min={MIN_LOGO_HEIGHT}
+            max={MAX_LOGO_HEIGHT}
+            value={logoHeightOf(list)}
+            onChange={(e) => set("logoHeight", Number(e.target.value))}
+            style={{ flex: 1, maxWidth: 260 }}
+          />
+          <span className="hint" style={{ margin: 0, minWidth: 44 }}>{logoHeightOf(list)}px</span>
+          {list.logoHeight != null && list.logoHeight !== DEFAULT_LOGO_HEIGHT && (
+            <button className="adm-btn secondary" onClick={() => set("logoHeight", null)}>
+              Reset size
+            </button>
+          )}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "6px 0 8px" }}>
+          <span className="hint" style={{ margin: 0 }}>Header color</span>
+          <input
+            type="color"
+            value={headerColorOf(list)}
+            onChange={(e) => set("headerColor", e.target.value)}
+            style={{ width: 44, height: 30, padding: 0, border: "1px solid #ccc", borderRadius: 4 }}
+          />
+          <span className="hint" style={{ margin: 0 }}>{headerColorOf(list)}</span>
+          {list.headerColor && list.headerColor !== DEFAULT_HEADER_COLOR && (
+            <button className="adm-btn secondary" onClick={() => set("headerColor", null)}>
+              Reset to navy
+            </button>
+          )}
+        </div>
         <input
           type="file"
           accept="image/*"

@@ -15,6 +15,10 @@ model List {
   name            String
   slug            String   @unique
   logoUrl         String? // falls back to the MTA cream logo when null
+  // Header logo height in px (null => DEFAULT_LOGO_HEIGHT). Clamped in lib/logo.ts.
+  logoHeight      Int?
+  // Header bar background as #rrggbb (null => MTA navy). Validated in lib/logo.ts.
+  headerColor     String?
   // Internal-only, per-list SET of post-category names the publisher manages
   // (e.g. "Ticker Tuesday", "Market Recap"). Each post may be tagged with one.
   // NEVER rendered on any public page. (Lists themselves are NOT categorized.)

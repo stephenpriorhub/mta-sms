@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getHubUser, isAuthorizedHubUser, forbidden } from "@/lib/hub-auth";
 import { normalizeSlug, isValidSlug } from "@/lib/slug";
 import { sanitizePostCategories } from "@/lib/categories";
+import { clampLogoHeight, cleanHeaderColor } from "@/lib/logo";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +51,8 @@ export async function PUT(
     data.slug = slug;
   }
   if ("logoUrl" in body) data.logoUrl = body.logoUrl || null;
+  if ("logoHeight" in body) data.logoHeight = clampLogoHeight(body.logoHeight);
+  if ("headerColor" in body) data.headerColor = cleanHeaderColor(body.headerColor);
   if ("postCategories" in body)
     data.postCategories = sanitizePostCategories(body.postCategories);
   if ("archivesEnabled" in body) data.archivesEnabled = !!body.archivesEnabled;

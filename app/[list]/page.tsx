@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import PublicPost, { type ArchiveItem } from "@/components/PublicPost";
 import { SITE_URL, publicListUrl } from "@/lib/site";
+import { logoHeightOf, headerColorOf } from "@/lib/logo";
 
 // ISR: cached HTML for speed, refreshed often enough to reveal scheduled posts.
 export const revalidate = 60;
@@ -49,7 +50,7 @@ export default async function ListPage({
       <>
         <header
           style={{
-            background: "var(--navy)",
+            background: headerColorOf(list),
             padding: "14px 18px",
             display: "flex",
             justifyContent: "center",
@@ -67,7 +68,7 @@ export default async function ListPage({
             <img
               src={list.logoUrl || "/logo-cream.png"}
               alt={list.name}
-              style={{ maxHeight: 34, width: "auto", display: "block" }}
+              style={{ maxHeight: logoHeightOf(list), maxWidth: "100%", width: "auto", display: "block" }}
             />
           </a>
         </header>
