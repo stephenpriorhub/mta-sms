@@ -27,8 +27,9 @@ jobs:
           HUB_API_TOKEN: ${{ secrets.HUB_API_TOKEN }}
           MTA_SMS_URL: ${{ vars.MTA_SMS_URL || 'https://mta-sms.oxfordhub.app' }}
         run: |
-          # 14 days of margin, so a multi-day outage still self-heals.
-          since=$(date -u -d '14 days ago' +%F)
+          # 30 days: margin for a multi-day outage, and it keeps each post's
+          # page-view counts in MTARIX current through its first month.
+          since=$(date -u -d '30 days ago' +%F)
           echo "Sweeping T-Letters published since $since"
           code=$(curl -sS -o /tmp/out.json -w "%{http_code}" \
             -X POST "$MTA_SMS_URL/api/admin/mtarix-backfill?since=$since" \

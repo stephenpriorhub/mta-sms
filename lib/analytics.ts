@@ -45,3 +45,19 @@ export async function uniqueViewsByPost(
   `;
   return new Map(rows.map((r) => [r.postId, Number(r.unique)]));
 }
+
+// Total + unique views for a single post's page.
+export async function viewCountsForPost(
+  postId: string
+): Promise<{ views: number; unique: number }> {
+  const rows = await prisma.$queryRaw<{ views: bigint; unique: bigint }[]>`
+    SELECT COUNT(*) AS "views",
+      COUNT(DISTINCT "visitorId") FILTER (WHERE "visitorId" IS NOT NULL)
+      + COUNT(*) FILTER (WHERE "visitorId" IS NULL) AS "unique"
+    FROM "PageView"
+    WHERE "postId" = ${postId}
+  `;
+  return rows[0]
+    ? { views: Number(rows[0].views), unique: Number(rows[0].unique) }
+    : { views: 0, unique: 0 };
+}

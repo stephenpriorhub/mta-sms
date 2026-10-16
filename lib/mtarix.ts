@@ -10,6 +10,7 @@
 // logged only. Call it from Next `after()` so it runs off the response path.
 
 import { publicPostUrl } from "@/lib/site";
+import { viewCountsForPost } from "@/lib/analytics";
 
 const MTARIX_ENDPOINT =
   process.env.MTARIX_EDITORIAL_URL ??
@@ -17,10 +18,10 @@ const MTARIX_ENDPOINT =
 
 // How a T-Letter list maps to a MTARIX editorial `code`. Keyed by the list's
 // normalized name (lowercased, whitespace-collapsed). Lists with NO mapping are
-// skipped so we never create mis-coded editorial. Matt McCall's T-Letter has no
-// list yet, so it intentionally has no entry.
+// skipped so we never create mis-coded editorial.
 const CODE_BY_LIST_NAME: Record<string, string> = {
   "trade of the day wake up watchlist": "TDWATCH",
+  "matt mccall s private wire": "MPW",
 };
 
 // Normalize a list name for mapping lookup. Any run of non-alphanumeric
@@ -80,6 +81,10 @@ export async function syncEditorialToMtarix(
     // publishDate as YYYY-MM-DD (UTC).
     const publishDate = post.publishDate.toISOString().slice(0, 10);
 
+    // Running traffic for the post's page. Re-sent on every sweep, so MTARIX's
+    // T-Letter page-view numbers keep up as views come in after publish.
+    const views = await viewCountsForPost(post.id);
+
     const payload = {
       sourceId: `mta-sms:${post.id}`,
       title: post.title || "Untitled",
@@ -88,6 +93,8 @@ export async function syncEditorialToMtarix(
       url: publicPostUrl(list.slug, post.id),
       // Sent as-is; MTARIX parses into "Tickers Recommended". Null when unset.
       tickers: post.ticker ?? null,
+      pageViews: views.views,
+      uniquePageViews: views.unique,
     };
 
     const controller = new AbortController();
