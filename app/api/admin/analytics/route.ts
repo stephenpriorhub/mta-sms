@@ -5,6 +5,8 @@ import {
   uniqueViewsByList,
   uniqueViewsForList,
   uniqueViewsByPost,
+  linkStats,
+  uniqueClickersByPost,
 } from "@/lib/analytics";
 
 export const dynamic = "force-dynamic";
@@ -57,7 +59,8 @@ export async function GET(req: NextRequest) {
     posts,
     viewsByPost,
     uniqueByPost,
-    clicksByUrl,
+    linksByPost,
+    clickersByPost,
   ] = await Promise.all([
     prisma.pageView.count({ where: { listId } }),
     uniqueViewsForList(listId),
@@ -73,11 +76,8 @@ export async function GET(req: NextRequest) {
       _count: { _all: true },
     }),
     uniqueViewsByPost(listId),
-    prisma.linkClick.groupBy({
-      by: ["postId", "url", "label"],
-      where: { listId },
-      _count: { _all: true },
-    }),
+    linkStats({ listId }),
+    uniqueClickersByPost({ listId }),
   ]);
 
   const viewMap = new Map(
@@ -97,10 +97,8 @@ export async function GET(req: NextRequest) {
       publishDate: p.publishDate,
       views: viewMap.get(p.id) ?? 0,
       uniqueViews: uniqueByPost.get(p.id) ?? 0,
-      links: clicksByUrl
-        .filter((c) => c.postId === p.id)
-        .map((c) => ({ url: c.url, label: c.label, clicks: c._count._all }))
-        .sort((a, b) => b.clicks - a.clicks),
+      uniqueClickers: clickersByPost.get(p.id) ?? 0,
+      links: linksByPost.get(p.id) ?? [],
     })),
   });
 }

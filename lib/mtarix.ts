@@ -10,7 +10,7 @@
 // logged only. Call it from Next `after()` so it runs off the response path.
 
 import { publicPostUrl } from "@/lib/site";
-import { viewCountsForPost } from "@/lib/analytics";
+import { viewCountsForPost, linkStats, uniqueClickersByPost } from "@/lib/analytics";
 
 const MTARIX_ENDPOINT =
   process.env.MTARIX_EDITORIAL_URL ??
@@ -83,7 +83,11 @@ export async function syncEditorialToMtarix(
 
     // Running traffic for the post's page. Re-sent on every sweep, so MTARIX's
     // T-Letter page-view numbers keep up as views come in after publish.
-    const views = await viewCountsForPost(post.id);
+    const [views, links, clickers] = await Promise.all([
+      viewCountsForPost(post.id),
+      linkStats({ postId: post.id }),
+      uniqueClickersByPost({ postId: post.id }),
+    ]);
 
     const payload = {
       sourceId: `mta-sms:${post.id}`,
@@ -95,6 +99,10 @@ export async function syncEditorialToMtarix(
       tickers: post.ticker ?? null,
       pageViews: views.views,
       uniquePageViews: views.unique,
+      // Per-link clicks / unique clicks (type ad | cta | content) and the
+      // number of distinct visitors who clicked anything — MTARIX derives CTR.
+      links: links.get(post.id) ?? [],
+      uniqueClickers: clickers.get(post.id) ?? 0,
     };
 
     const controller = new AbortController();

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +15,11 @@ export async function GET(
   const { searchParams } = new URL(req.url);
   const target = searchParams.get("u") || "";
   const label = searchParams.get("label") || null;
+
+  // The page-view pixel normally set this cookie already; mint one if it didn't
+  // (pixel blocked) so repeat clicks from this visitor still count once.
+  let visitorId = req.cookies.get("tl_vid")?.value;
+  const setVid = visitorId ? null : (visitorId = randomUUID());
 
   // Only redirect to absolute http(s) URLs — never an open relative/js redirect.
   let dest: URL | null = null;
@@ -41,6 +47,7 @@ export async function GET(
           listId: post.listId,
           url: dest.toString(),
           label,
+          visitorId,
         },
       });
     }
@@ -48,5 +55,15 @@ export async function GET(
     // never block the redirect on a tracking failure
   }
 
-  return NextResponse.redirect(dest.toString(), 302);
+  const res = NextResponse.redirect(dest.toString(), 302);
+  if (setVid) {
+    res.cookies.set("tl_vid", setVid, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: true,
+      maxAge: 60 * 60 * 24 * 365,
+      path: "/",
+    });
+  }
+  return res;
 }

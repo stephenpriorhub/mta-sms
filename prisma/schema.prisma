@@ -109,6 +109,10 @@ model LinkClick {
   postId String
   url    String   @db.Text
   label  String? // e.g. "action-button", or the link text
+  // Same anonymous `tl_vid` cookie as PageView, so unique clicks and CTR
+  // (unique clicks / unique page views) line up. Null for clicks recorded
+  // before 2026-10-16 — those each count as their own unique click.
+  visitorId String?
   ts     DateTime @default(now())
 
   list List @relation(fields: [listId], references: [id], onDelete: Cascade)
@@ -116,6 +120,7 @@ model LinkClick {
 
   @@index([postId, ts])
   @@index([listId, ts])
+  @@index([postId, visitorId])
 }
 
 // Uploaded image, resized/compressed to webp at upload time and stored inline.

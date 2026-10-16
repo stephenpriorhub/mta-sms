@@ -39,7 +39,8 @@ interface Analytics {
     title: string | null;
     views: number;
     uniqueViews: number;
-    links: { url: string; label: string | null; clicks: number }[];
+    uniqueClickers: number;
+    links: { type: "ad" | "cta" | "content"; url: string; clicks: number; unique: number }[];
   }[];
 }
 
@@ -121,6 +122,10 @@ export default function ManageList() {
 
   const clicksFor = (postId: string) =>
     analytics?.posts.find((p) => p.id === postId);
+  // CTR = unique clicks / unique page views.
+  const ctr = (unique: number, uniqueViews: number) =>
+    uniqueViews > 0 ? `${((unique / uniqueViews) * 100).toFixed(1)}%` : "—";
+  const TYPE_LABEL = { ad: "Ad", cta: "CTA", content: "Content" } as const;
 
   return (
     <>
@@ -387,21 +392,26 @@ export default function ManageList() {
           p.links.length > 0 && (
             <div className="adm-card" key={p.id}>
               <strong>{p.title || "Untitled"}</strong> — {p.views} views ·{" "}
-              {p.uniqueViews} unique
+              {p.uniqueViews} unique · {p.uniqueClickers} unique clickers · CTR{" "}
+              {ctr(p.uniqueClickers, p.uniqueViews)}
               <table className="adm-table" style={{ marginTop: 10 }}>
                 <thead>
                   <tr>
+                    <th>Type</th>
                     <th>Link</th>
-                    <th>Label</th>
                     <th>Clicks</th>
+                    <th>Unique</th>
+                    <th>CTR</th>
                   </tr>
                 </thead>
                 <tbody>
                   {p.links.map((l, i) => (
                     <tr key={i}>
+                      <td>{TYPE_LABEL[l.type]}</td>
                       <td style={{ wordBreak: "break-all", maxWidth: 380 }}>{l.url}</td>
-                      <td>{l.label || "—"}</td>
                       <td>{l.clicks}</td>
+                      <td>{l.unique}</td>
+                      <td>{ctr(l.unique, p.uniqueViews)}</td>
                     </tr>
                   ))}
                 </tbody>
