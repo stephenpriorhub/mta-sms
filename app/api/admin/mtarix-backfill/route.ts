@@ -64,7 +64,6 @@ export async function POST(req: NextRequest) {
 
   let synced = 0;
   let failed = 0;
-  let skipped = 0;
   const results: Array<{
     postId: string;
     title: string;
@@ -78,9 +77,7 @@ export async function POST(req: NextRequest) {
   // Sequential to stay gentle on MTARIX; batches here are small.
   for (const post of posts) {
     const r = await syncEditorialToMtarix(post, post.list);
-    // A deliberate skip (e.g. a "Test" post) isn't a failure — don't fail the sweep.
     if (r.ok) synced++;
-    else if (r.skipped === "test-post") skipped++;
     else failed++;
     results.push({
       postId: post.id,
@@ -102,7 +99,6 @@ export async function POST(req: NextRequest) {
     })),
     found: posts.length,
     synced,
-    skipped,
     failed,
     results,
   });

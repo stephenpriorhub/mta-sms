@@ -75,9 +75,6 @@ export async function syncEditorialToMtarix(
     const code = editorialCodeForList(list.name);
     if (!code) return { ok: false, skipped: "unmapped-list" };
 
-    // Throwaway posts made to check the layout aren't editorial.
-    if (/^\s*test\s*$/i.test(post.title ?? "")) return { ok: false, skipped: "test-post" };
-
     const token = process.env.HUB_API_TOKEN;
     if (!token) return { ok: false, skipped: "no-token" };
 
