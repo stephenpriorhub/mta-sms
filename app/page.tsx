@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import PortraitTracker from "@/components/PortraitTracker";
 
 // The public site is path-per-list and every list is FULLY ISOLATED — so the
 // root intentionally lists nothing and links nowhere. It exists only so the bare
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <>
+      <PortraitTracker />
       <header
         style={{
           background: "var(--navy)",
